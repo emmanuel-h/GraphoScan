@@ -1,0 +1,101 @@
+
+
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+ 
+\begin{document}
+
+\begin{center}
+{\large Master 1 - Ingénierie Informatique} \\ [0.5cm]
+\vfill
+\rule{\linewidth}{0.4mm} \\ [0.4cm]
+{\huge \bfseries
+Mémoire Intermédiaire 
+\\ GraphoScan \\ [0.4cm]
+}
+\rule{\linewidth}{0.4mm} \\ [1.5cm]
+
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+Thibault \textsc{Charpignon} \\
+Benoît \textsc{Gallet} \\
+Emmanuel \textsc{Herrmann} \\
+Martin \textsc{Rety}
+\end{flushleft}
+\end{minipage}
+
+\vfill
+
+\large\emph{Encadré par : }{Matthieu \textsc{Exbrayat}}
+
+\vfill
+
+
+{\large 6 Février - 13 Mars 2017}
+
+\end{center}
+
+\newpage
+ 
+\tableofcontents
+
+\newpage
+ 
+\section{Résumé du projet}
+\begin{itemize}
+\item Présentation rapide du projet : Présenter brièvement le sujet du TER
+\item Les origines, la demande du paléographe : Dans quel but fait-on ça (avoir une reproduction 3D des gestes de la main pour distinguer des écoles d'écritures, ...)
+\end{itemize}
+\section{Introduction au domaine}
+\begin{itemize}
+\item Librairies : utilisation librairies graphique pour du traitement de flux vidéo dans le but de faire du tracking sur le résultat
+\item Langages,Frameworks : opencv matlab c++
+\end{itemize}
+\section{Analyse de l'existant}
+\begin{itemize}
+\item Résumé du travail des deux précédents étudiants
+\item Pour l'instant une capture limitée à 10fps
+\item Impossibilité de bouger la feuille
+\item D'autres petits problèmes : l'éclairage, les mouvements parasites du calligraphe, etc
+\item Les fonctionalités déjà implémentées : La synchronisation des caméras, le calibrage, les algorithmes de tracking basiques, une première recherche et analyse du matériel
+\end{itemize}
+\section{Besoins non fonctionnels et fonctionnels}
+-Benoit + Emmanuel (Augmentation de la cadence d'acquisition):
+\begin{itemize}
+\item Programmation parallèle (cpu ou gpu)
+\item Analyse de la complexité de l'algorithme et des structures de données
+\item Faire des tests fonctionnels dans l'algo pour tester les performances
+\item Généraliser le problème pour fonctionner avec plus de deux caméras
+\end{itemize}
+
+-Thibault + Martin (Tracking de la plume):
+\begin{itemize}
+\item Analyse de la complexité des algos de tracking
+\item Eliminer les mouvements parasites
+\item Définir une zone de capture
+\item Gérer les sorties du champs de vision des caméras
+\end{itemize}
+
+-Général
+\begin{itemize}
+\item Idées de rajouter une caméra pour ajouter un flux vidéo de suivi de la plume
+\item Améliorations diverses pour la lumière (comme un panneau LED)
+\item Compatibilité Windows - Linux - Mac
+\end{itemize}
+
+\section{Prototypes et résultats de tests préparatoires}
+A définir plus tard
+
+\section{Planning}
+Deux sous-groupes
+Martin et Thibault sur le tracking et ce qui tourne autour, Benoit et Emmanuel les caméras et l'amélioration de l'acquisition stéréo
+Ajouter diagramme de gantt actuel + prévisionnel (?)
+
+\section{Bibliographie}
+A remplir au fur et à mesure de l'exploration du projet (librairies fournies et sites de recherche spécialisés) + Noter les sites visités dans un fichier partagé
+ 
+ 
+\end{document}
+
+\grid
