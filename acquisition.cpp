@@ -71,7 +71,7 @@ void PrintError(Error error){
 }
 
 void on_mouse(int event, int x, int y, int flags, void* ustc){
-  if (event = CV_EVENT_LBUTTONDBLCLK){
+  if ((event = CV_EVENT_LBUTTONDBLCLK)){
     cv::Point pt = cv::Point(x, y);
     if (pt.x <= 1288){
       cout << "(x,y) = (" << pt.x << ", " << pt.y << ")" << 
@@ -271,7 +271,7 @@ int main(int argc, char* argv[]){
   //string time = __TIME__;
   //create folder
   char *folder = const_cast<char*> (date.c_str());
-  char *make = "md ";
+  char const *make = "md ";
   char *foldermake = new char[strlen(folder) + strlen(make) + 1];
   strcpy(foldermake, make);
   strcat(foldermake, folder);
