@@ -20,6 +20,9 @@ int frameCount1 = 0;
 
 //cv::Mat image, image1;
 
+/**
+   Affiche les informations de version de FlyCapture
+ */
 void PrintBuildInfo(){
   FC2Version fc2Version;
   Utilities::GetLibraryVersion(&fc2Version);
@@ -32,6 +35,9 @@ void PrintBuildInfo(){
   cout << timeStamp.str() << endl << endl;
 }
 
+/**
+   Affiche les informations de la caméra
+ */
 void PrintCameraInfo(CameraInfo* pCamInfo){
   cout << "*** CAMERA INFORMATION ***" << endl;
   cout << "Serial number -" << pCamInfo->serialNumber << endl;
@@ -40,16 +46,21 @@ void PrintCameraInfo(CameraInfo* pCamInfo){
   cout << "Sensor - " << pCamInfo->sensorInfo << endl;
   cout << "Resolution - " << pCamInfo->sensorResolution << endl;
   cout << "Firmware version - " << pCamInfo->firmwareVersion << endl;
-  cout << "Firmware build time - " << pCamInfo->firmwareBuildTime << 
-    endl << endl;
+  cout << "Firmware build time - " << pCamInfo->firmwareBuildTime << endl << endl;
 }
 
+/**
+   Transforme un int en string
+ */
 string int2str(int i){
   ostringstream out;
   out << i;
   return out.str();
 }
 
+/**
+   Remplace les espaces par des underscores dans un string donnée (date ?)
+ */
 string replaceSpace(string str){
   int n = str.length();
 
@@ -66,10 +77,16 @@ string replaceSpace(string str){
   return str;
 }
 
+/**
+   Affiche une erreur
+ */
 void PrintError(Error error){
   error.PrintErrorTrace();
 }
 
+/**
+   Si il y a un clic gauche de la souris dans la fenêtre, affiche les coordonées du pointeur
+ */
 void on_mouse(int event, int x, int y, int flags, void* ustc){
   if ((event = CV_EVENT_LBUTTONDBLCLK)){
     cv::Point pt = cv::Point(x, y);
@@ -83,6 +100,9 @@ void on_mouse(int event, int x, int y, int flags, void* ustc){
   }
 }
 
+/**
+   Affiche des paramètres de réglage de la caméra
+ */
 bool ReadInnerParam(const char* filename, long double cm[3][3], long double dc[5]){
   bool isRead = false;
   ifstream fin(filename, ios_base::in);
@@ -321,7 +341,7 @@ int main(int argc, char* argv[]){
   //FPS 30 too fast, 20 is also fast, 15 is better
 
   if (chV == 'y' || chV == 'Y'){
-    //CV_FOURCC('X', 'V', 'I', 'D'),CV_FOURCC('M', 'P', 'E', 'G')
+    //CV_FOURCC('X', 'V', 'I', 'D'),CV_FOURCC('M', 'P', 'E', 'G'),CV_FOURCC('M','P','4','2')
     outputVideo.open(NAME_R, CV_FOURCC('X', 'V', 'I', 'D'), 30, cv::Size(1288, 964), true);
     if (!outputVideo.isOpened()){
       cout << "could not open the output video for write" << endl;
