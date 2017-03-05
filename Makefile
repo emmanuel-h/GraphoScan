@@ -23,7 +23,7 @@ all: ${NAME}
 
 # Output binary
 ${NAME}: ${OBJ}
-	${CXX} ${OBJ} -o ${NAME} ${LIBS} ${OPENCV}
+	${CXX} ${OBJ} -o ${NAME} ${LIBS} ${OPENCV} -O2
 
 # Intermediate object files
 ${OBJ}: ${ODIR}/%.o : ${SDIR}/%.cpp

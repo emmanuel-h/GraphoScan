@@ -12,6 +12,8 @@
 #include <time.h>
 #include <cstring>
 
+#define RESULT_BENCH "result.bench"
+
 using namespace FlyCapture2;
 using namespace std;
 
@@ -300,7 +302,9 @@ int main(int argc, char* argv[]){
   cout << "Do you want to take pictures for calibration (press SPACE to take pictures)? y/n ";
 
   char chP;
-  cin >> chP;
+  //cin >> chP;
+  chP='N';
+  
   int numCalib = 0;
   int numPic = 0;
   const string right = "_right";
@@ -332,7 +336,8 @@ int main(int argc, char* argv[]){
 
   cout << "Do you want to take videos (video begins immediately)? y/n ";
   char chV;
-  cin >> chV;
+  //cin >> chV;
+  chV='Y';
   const string NAME_R = date + "\\" + date + "_video_right.avi";
   const string NAME_L = date + "\\" + date + "_video_left.avi";
   cv::VideoWriter outputVideo, outputVideo1;
@@ -363,8 +368,47 @@ int main(int argc, char* argv[]){
   cv::namedWindow("Cameras: left - right", CV_WINDOW_NORMAL);
   char key = 0;
   int countfram = 0;
-  while (key != 27){
-    countfram++;
+
+  time_t start, end;
+  double fps;
+  int counter = 0;
+  double sec;
+  time(&start);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  bool display = false;
+  
+  while (/*key != 27*/counter<500){
+    ++counter;
     // Get the image
     Image rawImage, rawImage1;
     Error error = camera.RetrieveBuffer(&rawImage);
@@ -410,8 +454,9 @@ int main(int argc, char* argv[]){
     compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
     compression_params.push_back(100);
 
+    
     //calibration pic
-    if (cv::waitKey(30) == ' ' && (chP == 'y' || chP == 'Y')){
+    if (key  == ' ' && (chP == 'y' || chP == 'Y')){
       //attention: no space in names
       PicNameR = date + "\\" + date + right + int2str(numCalib) + format;
       PicNameL = date + "\\" + date + left + int2str(numCalib) + format;
@@ -430,7 +475,7 @@ int main(int argc, char* argv[]){
     }
 
     //common pic
-    if (cv::waitKey(30) == ' ' && (chP == 'n' || chP == 'N')){
+    if (key == ' ' && (chP == 'n' || chP == 'N')){
       //attention: no space in names
       PicNameR = date + "\\" + date + right + pic + int2str(numPic) + format;
       PicNameL = date + "\\" + date + left + pic + int2str(numPic) + format;
@@ -449,9 +494,47 @@ int main(int argc, char* argv[]){
       outputVideo1.write(image1);
       //cout << "frameCount1: " << frameCount1++ << endl;
     }
-    key = cv::waitKey(30);
+    if(display){
+      //key = cv::waitKey(1); // à diminuer pour les tests
+    }
+      display = !display;
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  time(&end);
+  sec = difftime (end, start);      
+  fps = counter / sec;
+  cout << fps << endl;
+  
+  ofstream myfile(RESULT_BENCH,ios::app);
+  myfile << fps << endl;
+  myfile.close();
+  
   //calibration pic list
   if (chP == 'y' || chP == 'Y'){
     fsL << "]";
