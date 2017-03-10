@@ -1,0 +1,7 @@
+\subsection{Présentation}
+
+Ce projet de TER prolonge un travail déjà entamé l'année dernière par deux étudiants de Polytech, consistant à enregistrer en vidéo l'écriture d'un calligraphe, pour pouvoir reconstruire un modelè en 3D du mouvement de la plume. Une structure en bois supporte deux caméras, que l'ont peut bouger le long de rail puis fixer à l'aide de vis. Le calligraphe écrit sous cette structure, éclairée par des spots lumineux, puis recopie des lignes d'un document. Il faut alors associer l'image des deux caméras, ce qui n'est pas possible nativement avec le logiciel fourni par le fabricant (FlyCapture de PointGrey) pour faire de l'acquisition vidéo en stéréo, puis reconstituer via OpenGL les mouvements de la plume. Ces mouvements ont été sauvegardé grâce à des algorithmes de tracking, travaillant sur les vidéos enregistrées auparavant.
+
+\subsection{But du projet}
+
+Ce projet permettra à terme de réaliser une reconstruction 3D des mouvements du calligraphe. On pourra alors lui faire recopier plusieurs textes, provenant de différents lieux et différentes époques, afin de pouvoir comparer les styles d'écriture, définir s'il existait différentes écoles d'écriture, différents styles, etc. De manière plus générale, le projet pourra servir pour beaucoup d'applications par la suite, car le code (après le TER) se voudra le plus possible généraliste.
