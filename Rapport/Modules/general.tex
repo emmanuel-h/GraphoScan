@@ -1,23 +1,15 @@
-\documentclass{article}
-\usepackage[utf8]{inputenc}
-\usepackage{indentfirst}
+\subsubsection{Zone de capture}
 
-\begin{document}
-
-\subsubsection{zone de capture}
-
-En écrivant, le calligraphe doit de temps en temps bouger la feuille pour se repositionner et continuer sa rédaction. L'algorithme actuel ne gère pas ce mouvement, ce qui nécessitait après chaque mouvement de la feuille un nouveau calibrage des caméras et de la zone de capture. Une solution possible pour résoudre ce problème est la mise en place d'un système de cadre détectable par l'algorithme pour éviter toute interruption. Ce cadre pourrait être un marquage sur la feuille qui délimitera la zone de capture. Nous souhaitons également rechercher d'autre solutions possibles pour résoudre ce problème.
+En écrivant, le calligraphe doit de temps en temps bouger la feuille pour se repositionner et continuer sa rédaction. L'algorithme actuel ne gère pas ce mouvement, ce qui nécessitait après chaque mouvement de la feuille un nouveau calibrage des caméras et de la zone de capture. Une solution possible pour résoudre ce problème est la mise en place d'un système de cadre pour que le calligraphe sache la zone dans laquelle il peut écrire. Ce cadre pourrait être un marquage sur la feuille qui délimitera la zone de capture. Nous souhaitons également rechercher d'autre solutions possibles pour résoudre ce problème.
 
 \subsubsection{Changement de la structure}
 
-Pour le moment le dispositif de capture ne comporte que deux caméras et des angles de prise de vues bien défini. L'ajout d'une caméra et le repositionnement des deux premières peut permettre de rendre plus précise l'acquisition. De cette manière nous aurions à notre disposition des informations supplémentaires pour améliorer la reconstruction du mouvement. Il nous faut donc tester différentes configurations et choisir la meilleur. \\
+Pour le moment le dispositif de capture ne comporte que deux caméras et des angles de prises de vue bien définis. L'ajout d'une caméra et le repositionnement des deux premières peut permettre de rendre plus précise l'acquisition. De cette manière nous aurions à notre disposition des informations supplémentaires pour améliorer la reconstruction du mouvement. Il nous faut donc tester différentes configurations et choisir la meilleure \\
 
-Un des facteurs majeurs de la capture d'image est la lumière. En effet, il est important que la feuille soit bien éclairé pour le confort et l'écriture du calligraphe. La structure actuelle ne comporte pas d'éclairage du tout, il était nécessaire d'avoir une lampe d’appoint. Une solution simple est l'ajout une barre de LED pour avoir un luminosité uniforme sur toute la feuille. \\
+Un des facteurs majeurs de la capture d'image est la lumière. En effet, il est important que la feuille soit bien éclairée pour le confort et l'écriture du calligraphe. La structure actuelle ne comporte pas d'éclairage du tout, il était nécessaire d'avoir une lampe d’appoint. Une solution simple est l'ajout d'une plaque LED pour avoir une luminosité uniforme sur toute la feuille. \\
 
-Tous ces changements devront peut-être être accompagné d'une refonte totale du dispositif.
+Tous ces changements devront peut-être être accompagnés d'une refonte totale du dispositif.
 
 \subsubsection{Compatibilité Windows - Linux - MacOS}
 
-A l'origine, les étudiants ont développé tous le code sur Windows et plus particulièrement sur l'IDE Visual Studio (C++). Pour rendre le code réutilisable à l'avenir nous avons comme objectif de pourvoir l'utiliser sur tous les systèmes d'exploitation (Linux/MacOS). Pour cela il est nécessaire d'uniformiser le code et de se servir des librairies communes pour standardiser au mieux le projet.
-
-\end{document}
+A l'origine, les étudiants ont développé tout le code sur Windows et plus particulièrement sur l'IDE Visual Studio (C++). Pour rendre le code réutilisable à l'avenir nous avons comme objectif de pouvoir l'utiliser sur tous les systèmes d'exploitation (Linux/MacOS en plus). Pour cela il est nécessaire d'uniformiser le code et de se servir de librairies communes pour standardiser au mieux le projet.
