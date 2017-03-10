@@ -2,7 +2,19 @@
 \contentsline {subsection}{\numberline {1.1}Pr\IeC {\'e}sentation}{3}
 \contentsline {section}{\numberline {2}Introduction au domaine}{3}
 \contentsline {section}{\numberline {3}Analyse de l'existant}{3}
-\contentsline {section}{\numberline {4}Besoins non fonctionnels et fonctionnels}{3}
-\contentsline {section}{\numberline {5}Prototypes et r\IeC {\'e}sultats de tests pr\IeC {\'e}paratoires}{4}
-\contentsline {section}{\numberline {6}Planning}{4}
-\contentsline {section}{\numberline {7}Bibliographie}{4}
+\contentsline {subsection}{\numberline {3.1}Fonctionnalit\IeC {\'e}s d\IeC {\'e}j\IeC {\`a} impl\IeC {\'e}ment\IeC {\'e}es}{3}
+\contentsline {subsection}{\numberline {3.2}Fr\IeC {\'e}quence d'acquisition limit\IeC {\'e}e}{3}
+\contentsline {subsection}{\numberline {3.3}Impossibilit\IeC {\'e} de bouger la feuille}{3}
+\contentsline {subsection}{\numberline {3.4}Probl\IeC {\`e}mes divers}{4}
+\contentsline {section}{\numberline {4}Besoins non fonctionnels et fonctionnels}{4}
+\contentsline {subsection}{\numberline {4.1}Augmentation de la cadence d'acquisition}{4}
+\contentsline {subsubsection}{\numberline {4.1.1}Programmation parall\IeC {\`e}le}{4}
+\contentsline {subsubsection}{\numberline {4.1.2}Complexit\IeC {\'e}}{5}
+\contentsline {subsubsection}{\numberline {4.1.3}Modularit\IeC {\'e}}{5}
+\contentsline {subsubsection}{\numberline {4.1.4}G\IeC {\'e}n\IeC {\'e}ralisation}{5}
+\contentsline {subsection}{\numberline {4.2}Tracking de la plume}{5}
+\contentsline {subsubsection}{\numberline {4.2.1}Analyse de la complexit\IeC {\'e}}{6}
+\contentsline {subsubsection}{\numberline {4.2.2}gestion mouvements}{6}
+\contentsline {section}{\numberline {5}Prototypes et r\IeC {\'e}sultats de tests pr\IeC {\'e}paratoires}{7}
+\contentsline {section}{\numberline {6}Planning}{7}
+\contentsline {section}{\numberline {7}Bibliographie}{7}

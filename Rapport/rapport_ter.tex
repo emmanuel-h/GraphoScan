@@ -1,8 +1,6 @@
-
-
 \documentclass{article}
 \usepackage[utf8]{inputenc}
-
+\usepackage{indentfirst}
  
 \begin{document}
 
@@ -23,7 +21,7 @@ Mémoire Intermédiaire \\ [0.4cm]
 Thibault \textsc{Charpignon} \\
 Benoît \textsc{Gallet} \\
 Emmanuel \textsc{Herrmann} \\
-Martin \textsc{Rety}
+Martin \textsc{Réty}
 \end{flushleft}
 \end{minipage}
 
@@ -59,36 +57,29 @@ Ce projet de TER prolonge un travail déjà entamé l'année dernière par deux 
 \item Librairies : utilisation librairies graphique pour du traitement de flux vidéo dans le but de faire du tracking sur le résultat
 \item Langages,Frameworks : opencv matlab c++
 \end{itemize}
-\section{Analyse de l'existant}
-\begin{itemize}
-\item Résumé du travail des deux précédents étudiants
-\item Pour l'instant une capture limitée à 10fps
-\item Impossibilité de bouger la feuille
-\item D'autres petits problèmes : l'éclairage, les mouvements parasites du calligraphe, etc
-\item Les fonctionalités déjà implémentées : La synchronisation des caméras, le calibrage, les algorithmes de tracking basiques, une première recherche et analyse du matériel
-\end{itemize}
-\section{Besoins non fonctionnels et fonctionnels}
--Benoit + Emmanuel (Augmentation de la cadence d'acquisition):
-\begin{itemize}
-\item Programmation parallèle (cpu ou gpu)
-\item Analyse de la complexité de l'algorithme et des structures de données
-\item Faire des tests fonctionnels dans l'algo pour tester les performances
-\item Généraliser le problème pour fonctionner avec plus de deux caméras
-\end{itemize}
 
--Thibault + Martin (Tracking de la plume):
-\begin{itemize}
-\item Analyse de la complexité des algos de tracking
-\item Eliminer les mouvements parasites
-\item Définir une zone de capture
-\item Gérer les sorties du champs de vision des caméras
-\end{itemize}
+\section{Analyse de l'existant}
+
+\input{Modules/analyse_existant.tex}
+
+\section{Besoins non fonctionnels et fonctionnels}
+
+	Une séparation des tâches était déjà effective dans le projet original, sur lequel travaillaient deux personnes : une personne travaillait sur l'acquisition stéréo, pendant que la seconde s'occupait de la modélisation 3D de la plume. Cette séparation a été conservée dans ce TER : \textsc{Gallet} Benoît et \textsc{Herrmann} Emmanuel s'occupent de la première partie, tandis que \textsc{Charpignon} Thibault et \textsc{Réty} Martin ont pris la deuxième.
+
+\subsection{Augmentation de la cadence d'acquisition}
+
+\input{Modules/cadence_acq.tex}
+
+\subsection{Tracking de la plume}
+
+\input{Modules/tracking.tex}
 
 -Général
 \begin{itemize}
 \item Idées de rajouter une caméra pour ajouter un flux vidéo de suivi de la plume
 \item Améliorations diverses pour la lumière (comme un panneau LED)
 \item Compatibilité Windows - Linux - Mac
+\item Zone de capture
 \end{itemize}
 
 \section{Prototypes et résultats de tests préparatoires}
