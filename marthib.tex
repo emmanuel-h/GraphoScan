@@ -1,0 +1,34 @@
+\documentclass[12pt, letterpaper, twoside]{article}
+\usepackage{indentfirst}
+
+\begin{document}  
+
+Nous avons r\'ecup\'er\'e la partie "Tracking" du projet Graphoscan. Celle-ci permet de traiter les vid\'eos produites par les cam\'eras et d'en ressortir une trace des mouvements effectu\'es par le calligraphe. \\
+
+L'\'etudiant de Polytech qui a travaill\'e sur cette partie a recherch\'e diff\'erents algorithmes permettant d'effectuer ce tracking. Son \'etude se focalise sur les algorithmes suivants:
+
+\begin{itemize}
+
+\item Tracking Learning Detection (TLD)
+
+\item Kernelized Correlation Filters (KCF)
+
+\end{itemize}
+
+Ces deux algorithmes sont bas\'es sur l'apprentissage de toutes les apparences observ\'ees de l'objet et d'une estimation des erreurs pour ensuite les \'eviter.
+  
+\subsection{Analyse de la complexité}
+
+L'analyse des deux algorithmes faites par l'\'etudiant a montr\'e que dans notre cas l'algorithme KCF est le plus efficace. Son \'etude est bas\'ee sur plusieurs crit\`eres, la d\'eviation moyenne des deux vid\'eos, le nombre de frame et le temps de calcul. Seul le premier critère est r\'eellement diff\'erent entre les deux m\'ethodes. C'est cette diff\'erence qui a orient\'e son choix vers l'algortihme KCF. \\
+
+Notre premier axe de recherche sera orient\'e vers une \'etude compl\'ementaire des ces algorithmes pour v\'erifier la v\'eracit\'e de l'analyse pr\'ec\'edente. Pour cela nous allons r\'eutiliser les crit\`eres d'\'etudes et ensuite essayer d'en trouver d'autres pour confirmer le choix. \\
+
+Dans un second temps il nous faudra rechercher d'autres algorithmes ou m\'ethodes de programmation pour am\'eliorer le tracking.
+
+\subsection{gestion mouvements}
+
+Outre les difficult\'es de choix des algorithmes, nous faisons face \'egalement à des contraintes physique li\'ees aux mouvements du Calligraphe. Par exemple il doit prendre des temps de repos afin de garder sa fluidit\'e d'\'ecriture en faisant des gestes de relaxation du poignet. Ces mouvements ne doivent pas \^etre pris en compte par l'algorithme de tracking afin d'\'eviter des erreurs sur la repr\'esentation du mouvement. \\
+
+Pour palier ce probl\`eme, nous avons pens\'e \`a sauvegarder \`a un temps T et \`a un temps T+1 une image de la partie suivie. Puis analyser la diff\'erence entre les deux images et en ressortir un r\'esultat positif ou n\'egatif. Cela reviens \`a prendre la derni\`ere image o\`u le calligraphe \'ecrit et une autre image qui permettra de voir si le mouvement est la continuit\'e de l'\'ecriture ou un mouvement parasite.
+ 
+\end{document}
