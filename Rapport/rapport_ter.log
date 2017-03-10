@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.2.22)  10 MAR 2017 15:15
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.2.22)  10 MAR 2017 15:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -371,22 +371,24 @@ LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 52.
  (./Modules/analyse_existant.tex [3]) (./Modules/cadence_acq.tex [4])
 (./Modules/tracking.tex
-Underfull \hbox (badness 10000) in paragraph at lines 1--2
-
+Overfull \hbox (8.00063pt too wide) in paragraph at lines 1--2
+[]\OT1/cmr/m/n/10 Comme pour la par-tie sur l'augmentation de la ca-dence d'acq
+uisition, diff^^Serents
  []
 
 [5]
-Underfull \hbox (badness 10000) in paragraph at lines 17--18
+Underfull \hbox (badness 10000) in paragraph at lines 14--15
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 19--20
-
+Overfull \hbox (2.2504pt too wide) in paragraph at lines 16--17
+[]\OT1/cmr/m/n/10 Ici, notre pre-mier axe de recherche sera ori-ent^^Se vers un
+e ^^Setude compl^^Sementaire
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 25--26
+Underfull \hbox (badness 10000) in paragraph at lines 20--21
 
  []
 
@@ -408,7 +410,7 @@ m/cmcsc10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
 share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/
 texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on rapport_ter.pdf (7 pages, 127454 bytes).
+Output written on rapport_ter.pdf (7 pages, 127873 bytes).
 PDF statistics:
  64 PDF objects out of 1000 (max. 8388607)
  45 compressed objects within 1 object stream
