@@ -3,3 +3,6 @@
 *.bbl
 *.blg
 *.toc
+*.tgz
+*.tar.gz
+*.gz
