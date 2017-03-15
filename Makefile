@@ -22,6 +22,7 @@ all: ${NAME}
 # Règle de nettoyage
 .PHONY: clean
 clean:
+	find . -type f | xargs -n 5 touch
 	rm -f *.o
 
 # Compilation

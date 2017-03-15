@@ -6,7 +6,7 @@ touch result.bench
 
 for i in `seq 1 4`;
 do
-    ./acquisition
+    ./../acquisition
 done
 
 echo "Moyenne : " >> result.bench

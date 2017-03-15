@@ -11,8 +11,10 @@
 #include <fstream>
 #include <time.h>
 #include <cstring>
+#include <sys/time.h>
 
 #define RESULT_BENCH "result.bench"
+#define LATENCE_BENCH "latence.bench"
 
 using namespace FlyCapture2;
 using namespace std;
@@ -404,15 +406,24 @@ int main(int argc, char* argv[]){
 
 
 
-
+  timeval tv1, tv2, tv3;
+  ofstream myfile2(LATENCE_BENCH,ios::app);
   bool display = false;
   
   while (/*key != 27*/counter<500){
     ++counter;
     // Get the image
     Image rawImage, rawImage1;
+    gettimeofday(&tv1, 0);
     Error error = camera.RetrieveBuffer(&rawImage);
+    gettimeofday(&tv2, 0);
     Error error1 = camera1.RetrieveBuffer(&rawImage1);
+    gettimeofday(&tv3, 0);
+    
+    
+    
+    myfile2 << "\"" << counter << "\" " << tv1.tv_sec-1489591000 << "." << tv1.tv_usec << " " << tv2.tv_sec-1489591000 << "." << tv2.tv_usec << " " << tv3.tv_sec-1489591000 << "." << tv3.tv_usec << endl;
+    
     if (error != PGRERROR_OK){
       std::cout << "capture error" << std::endl;
       continue;
@@ -475,10 +486,11 @@ int main(int argc, char* argv[]){
     }
 
     //common pic
+    string time = __TIME__;
     if (key == ' ' && (chP == 'n' || chP == 'N')){
       //attention: no space in names
-      PicNameR = date + "\\" + date + right + pic + int2str(numPic) + format;
-      PicNameL = date + "\\" + date + left + pic + int2str(numPic) + format;
+      PicNameR = date + "\\" + time + right + pic + int2str(numPic) + format;
+      PicNameL = date + "\\" + time + left + pic + int2str(numPic) + format;
       cout << "save common image " << numPic << endl;
 
       //write to JPG
@@ -495,10 +507,13 @@ int main(int argc, char* argv[]){
       //cout << "frameCount1: " << frameCount1++ << endl;
     }
     if(display){
-      //key = cv::waitKey(1); // à diminuer pour les tests
+      key = cv::waitKey(1); // à diminuer pour les tests
     }
       display = !display;
   }
+  
+  
+  myfile2.close();
 
 
 
