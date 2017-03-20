@@ -1,20 +1,29 @@
-#include "FlyCapture2.h"
 #include </usr/include/opencv2/core/core.hpp>
 #include </usr/include/opencv2/highgui/highgui.hpp>
 #include </usr/include/opencv2/opencv.hpp>
-
-// Pour OpenCV 3
-//#include </usr/include/opencv2/imgcodecs.hpp>
-
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <time.h>
 #include <cstring>
 #include <sys/time.h>
+#include <vector>
+// Pour OpenCV 3
+//#include </usr/include/opencv2/imgcodecs.hpp>
+
+#include "FlyCapture2.h"
+
+
+//#include "acquisition.hpp"
 
 #define RESULT_BENCH "result.bench"
 #define LATENCE_BENCH "latence.bench"
+
+#define CAMERA_WIDTH 1288
+#define CAMERA_HEIGHT 964
+#define NB_FPS 30
+
+#define BENCH TRUE
 
 using namespace FlyCapture2;
 using namespace std;
@@ -31,11 +40,11 @@ void PrintBuildInfo(){
   FC2Version fc2Version;
   Utilities::GetLibraryVersion(&fc2Version);
   ostringstream version;
-  version << "FlyCapture2 library version: " << fc2Version.major << "."
+  version << "FlyCapture2 library version : " << fc2Version.major << "."
 	  << fc2Version.minor << "." << fc2Version.type << "." << fc2Version.build;
   cout << version.str() << endl;
   ostringstream timeStamp;
-  timeStamp << "Application build date: " << __DATE__ << " " << __TIME__;
+  timeStamp << "Application build date : " << __DATE__ << " " << __TIME__;
   cout << timeStamp.str() << endl << endl;
 }
 
@@ -44,7 +53,7 @@ void PrintBuildInfo(){
  */
 void PrintCameraInfo(CameraInfo* pCamInfo){
   cout << "*** CAMERA INFORMATION ***" << endl;
-  cout << "Serial number -" << pCamInfo->serialNumber << endl;
+  cout << "Serial number - " << pCamInfo->serialNumber << endl;
   cout << "Camera model - " << pCamInfo->modelName << endl;
   cout << "Camera vendor - " << pCamInfo->vendorName << endl;
   cout << "Sensor - " << pCamInfo->sensorInfo << endl;
@@ -135,385 +144,328 @@ bool ReadInnerParam(const char* filename, long double cm[3][3], long double dc[5
   return isRead;
 }
 
+
+
+
 int main(int argc, char* argv[]){
-  cv::Size imageSize(1288, 964);
-  cout << "===========================Welcome to GraphoScan============================" << endl;
-
-  //========================Print Build information======================
-  PrintBuildInfo();
-
-  Error error, error1;
-  Camera camera, camera1;
-  CameraInfo camInfo, camInfo1;
-  BusManager busMgr;
-  unsigned int numCameras;
-
-  //========================get camera numbers======================
-
-  error = busMgr.GetNumOfCameras(&numCameras);
-  if (error != PGRERROR_OK){
-    PrintError(error);
-    return -1;
-  } else {
-    cout << "Number of cameras detected: " << numCameras << endl;
-  }
-
-  //========================get two cameras' id======================
-
-  PGRGuid guid0, guid1;
-  error = busMgr.GetCameraFromIndex(0, &guid0);
-  if (error != PGRERROR_OK){
-    PrintError(error);
-    return -1;
-  }
-
-  //======second
-
-  error1 = busMgr.GetCameraFromIndex(1, &guid1);
-  if (error1 != PGRERROR_OK){
-    PrintError(error);
-    return -1;
-  }
-
-  //========================Connect the cameras====================== 
-
-  error = camera.Connect(&guid0);
-  error1 = camera1.Connect(&guid1);
-
-  /*
-    PropertyType mtype = FRAME_RATE;
-    Property mproperty(mtype);
-    //mproperty.present = true;
-    mproperty.absControl = true;
-    mproperty.onOff = true;
-    mproperty.onePush = false;
-    mproperty.autoManualMode = false;
-    mproperty.absValue = 30;
-    error = camera.SetProperty(&mproperty, false);
-    error1 = camera1.SetProperty(&mproperty, false);
-    PropertyInfo minfo(mtype);
-    minfo.onOffSupported = true;
-    minfo.readOutSupported = true;
-    error = camera.GetPropertyInfo(&minfo);
-    cout << minfo.absMax <<" " <<minfo.absMin << endl;*/
-  /*
-    FC2Config mconfig;
-    mconfig.grabMode = BUFFER_FRAMES;
-    mconfig.numBuffers = 30;
-    error = camera.SetConfiguration(&mconfig);
-    error1 = camera1.SetConfiguration(&mconfig);
-    FC2Config readconfig;
-    error = camera.GetConfiguration(&readconfig);
-    cout << "setconfig " << readconfig.grabMode << " " << 
-    readconfig.numBuffers << endl;*/
-  //videomode framerate
-  /*VideoMode mvideomode = VIDEOMODE_800x600RGB;
-    FrameRate mframerate = FRAMERATE_30;
-    error = camera.SetVideoModeAndFrameRate(mvideomode, mframerate);
-    error1 = camera1.SetVideoModeAndFrameRate(mvideomode, mframerate);*/
-  //cout << "videomode = " << mvideomode << ", framerate = " << 
-  //mframerate << endl;
-  //camera.GetProperty(&mproperty);
-  //camera.SetConfiguration();
-
-  if (error != PGRERROR_OK){
-    std::cout << "Failed to connect to camera0" << std::endl;
-    return false;
-  } else {
-    cout << "connect to camera0 successfully" << endl;
-  }
-  if (error1 != PGRERROR_OK){
-    std::cout << "Failed to connect to camera1" << std::endl;
-    return false;
-  } else {
-    cout << "connect to camera1 successfully" << endl;
-  }
+  	cout << "=========================== Welcome to GraphoScan ===========================" << endl;
   
-  // ========================Get the camera info and print it out====================== 
-
-  error = camera.GetCameraInfo(&camInfo);
-  if (error != PGRERROR_OK){
-    std::cout << "Failed to get camera0 info from camera0" << std::endl;
-    return false;
-  }
-  cout << endl << "=========================Your right camera is========================== " << endl;
-  PrintCameraInfo(&camInfo);
-
-  /*
-    std::cout << "The camera0 you use is " << camInfo.vendorName << " "
-    << camInfo.modelName << " "
-    << camInfo.serialNumber << std::endl;*/
-
-  //================= second
-
-  error1 = camera1.GetCameraInfo(&camInfo1);
-  if (error1 != PGRERROR_OK){
-    std::cout << "Failed to get camera1 info from camera1" << std::endl;
-    return false;
-  }
-  cout << "========================Your left camera is============================= " << endl;
-  PrintCameraInfo(&camInfo1);
-
-  /*
-    std::cout << "The camera1 you use is " << camInfo1.vendorName << " "
-    << camInfo1.modelName << " "
-    << camInfo1.serialNumber << std::endl;*/
-
-  // ========================StartCapture====================== 
-
-  error = camera.StartCapture();
-  if (error == PGRERROR_ISOCH_BANDWIDTH_EXCEEDED){
-    std::cout << "Bandwidth exceeded" << std::endl;
-    return false;
-  } else {
-    if (error != PGRERROR_OK){
-      std::cout << "Failed to start image capture" << std::endl;
-      return false;
-    }
-  }
-
-  // ==============second
-
-  error1 = camera1.StartCapture();
-  if (error == PGRERROR_ISOCH_BANDWIDTH_EXCEEDED){
-    std::cout << "Bandwidth1 exceeded" << std::endl;
-    return false;
-  } else {
-    if (error != PGRERROR_OK){
-      std::cout << "Failed to start image capture" << std::endl;
-      return false;
-    }
-  }
-
-  // ===============================Take video / picture================================== 
-  // =====================take photos=============================
-  //two modes: take pictures for calibration, or just take common pictures
-
-  string date0 = __DATE__;
-  //cout << __DATE__ << endl;
-  string date = replaceSpace(date0);
-  //string time = __TIME__;
-  //create folder
-  char *folder = const_cast<char*> (date.c_str());
-  char const *make = "md ";
-  char *foldermake = new char[strlen(folder) + strlen(make) + 1];
-  strcpy(foldermake, make);
-  strcat(foldermake, folder);
-  system(foldermake);
-  cout << "==============================Picture & Videos====================================" << endl;
-  cout << "Do you want to take pictures for calibration (press SPACE to take pictures)? y/n ";
-
-  char chP;
-  //cin >> chP;
-  chP='N';
-  
-  int numCalib = 0;
-  int numPic = 0;
-  const string right = "_right";
-  const string left = "_left";
-  const string stereo = "_Stereo";
-  const string pic = "_Pic";
-  const string format = ".jpg";
-  string PicNameL;
-  string PicNameR;
-
-  //create image list
-
-  const string list = "_List";
-  const string format_list = ".yaml";
-  string outputlist_R = date + "\\" + date + right + list + format_list;
-  string outputlist_L = date + "\\" + date + left + list + format_list;
-  string outputlist_S = date + "\\" + date + stereo + list + format_list;
-  cv::FileStorage fsL, fsR, fsS;
-  if (chP == 'y' || chP == 'Y'){
-    fsL.open(outputlist_L, cv::FileStorage::WRITE);
-    fsL << "images" << "[";
-    fsR.open(outputlist_R, cv::FileStorage::WRITE);
-    fsR << "images" << "[";
-    fsS.open(outputlist_S, cv::FileStorage::WRITE);
-    fsS << "images" << "[";
-  }
-
-  //============================create a video==============================
-
-  cout << "Do you want to take videos (video begins immediately)? y/n ";
-  char chV;
-  //cin >> chV;
-  chV='Y';
-  const string NAME_R = date + "\\" + date + "_video_right.avi";
-  const string NAME_L = date + "\\" + date + "_video_left.avi";
-  cv::VideoWriter outputVideo, outputVideo1;
-
-  //XVID DIVX H264
-  //FPS 30 too fast, 20 is also fast, 15 is better
-
-  if (chV == 'y' || chV == 'Y'){
-    //CV_FOURCC('X', 'V', 'I', 'D'),CV_FOURCC('M', 'P', 'E', 'G'),CV_FOURCC('M','P','4','2')
-    outputVideo.open(NAME_R, CV_FOURCC('X', 'V', 'I', 'D'), 30, cv::Size(1288, 964), true);
-    if (!outputVideo.isOpened()){
-      cout << "could not open the output video for write" << endl;
-      return -1;
-    }
-
-    //problem here => outputVideo1 is bigger than outputVideo
-    outputVideo1.open(NAME_L, CV_FOURCC('X', 'V', 'I', 'D'), 30, cv::Size(1288, 964), true);
-    if (!outputVideo1.isOpened()){
-      cout << "could not open the output video1 for write" << endl;
-      return -1;
-    }
-  }
-
-  // ====================================Main loop==================================== 
-
-  //cv::namedWindow("rightCamera", CV_WINDOW_NORMAL);
-  //cv::namedWindow("leftCamera", CV_WINDOW_AUTOSIZE);
-  cv::namedWindow("Cameras: left - right", CV_WINDOW_NORMAL);
-  char key = 0;
-  int countfram = 0;
-
-  time_t start, end;
-  double fps;
-  int counter = 0;
-  double sec;
-  time(&start);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  timeval tv1, tv2, tv3;
-  ofstream myfile2(LATENCE_BENCH,ios::app);
-  bool display = false;
-  
-  while (/*key != 27*/counter<500){
-    ++counter;
-    // Get the image
-    Image rawImage, rawImage1;
-    gettimeofday(&tv1, 0);
-    Error error = camera.RetrieveBuffer(&rawImage);
-    gettimeofday(&tv2, 0);
-    Error error1 = camera1.RetrieveBuffer(&rawImage1);
-    gettimeofday(&tv3, 0);
-    
-    
-    
-    myfile2 << "\"" << counter << "\" " << tv1.tv_sec-1489591000 << "." << tv1.tv_usec << " " << tv2.tv_sec-1489591000 << "." << tv2.tv_usec << " " << tv3.tv_sec-1489591000 << "." << tv3.tv_usec << endl;
-    
-    if (error != PGRERROR_OK){
-      std::cout << "capture error" << std::endl;
-      continue;
-    }
-    if (error1 != PGRERROR_OK) {
-      std::cout << "capture1 error" << std::endl;
-      continue;
-    }
-
-    // convert to rgb
-    Image rgbImage, rgbImage1;
-    rawImage.Convert(FlyCapture2::PIXEL_FORMAT_BGR, &rgbImage);
-    rawImage1.Convert(FlyCapture2::PIXEL_FORMAT_BGR, &rgbImage1);
-
-    // convert to OpenCV Mat
-    unsigned int rowBytes = (double)rgbImage.GetReceivedDataSize() / (double)rgbImage.GetRows();
-    cv::Mat image = cv::Mat(rgbImage.GetRows(), rgbImage.GetCols(), CV_8UC3, rgbImage.GetData(), rowBytes);
-
-    //cv::imshow("rightCamera", image);
-    unsigned int rowBytes1 = (double)rgbImage1.GetReceivedDataSize() / (double)rgbImage1.GetRows();
-    cv::Mat image1 = cv::Mat(rgbImage1.GetRows(), rgbImage1.GetCols(), CV_8UC3, rgbImage1.GetData(), rowBytes1);
-
-    //cv::imshow("leftCamera", image1);
-    //two images in a same window
-    cv::Size sizeR = image.size();
-    cv::Size sizeL = image1.size();
-    cv::Mat imageROI(sizeL.height, sizeL.width + sizeR.width, CV_8UC3);
-    cv::Mat wright(imageROI, cv::Rect(sizeL.width, 0, sizeR.width, sizeR.height));
-    image.copyTo(wright);
-    cv::Mat wleft(imageROI, cv::Rect(0, 0, sizeL.width, sizeL.height));
-    image1.copyTo(wleft);
-    imshow("Cameras: left - right", imageROI);
-
-    //cv::setMouseCallback("Cameras: left - right", on_mouse, 0);
-    //==============================take pictures===========================
-    //compression-JPG
-
-    vector<int> compression_params;
-    compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
-    compression_params.push_back(100);
-
-    
-    //calibration pic
-    if (key  == ' ' && (chP == 'y' || chP == 'Y')){
-      //attention: no space in names
-      PicNameR = date + "\\" + date + right + int2str(numCalib) + format;
-      PicNameL = date + "\\" + date + left + int2str(numCalib) + format;
-      cout << "save calibration image " << numCalib << endl;
-
-      //write to JPG
-      cv::imwrite(PicNameR.data(), image, compression_params);
-      cv::imwrite(PicNameL.data(), image1, compression_params);
-
-      //write to image list
-      fsL << PicNameL;
-      fsR << PicNameR;
-      fsS << PicNameL;
-      fsS << PicNameR;
-      numCalib++;
-    }
-
-    //common pic
-    string time = __TIME__;
-    if (key == ' ' && (chP == 'n' || chP == 'N')){
-      //attention: no space in names
-      PicNameR = date + "\\" + time + right + pic + int2str(numPic) + format;
-      PicNameL = date + "\\" + time + left + pic + int2str(numPic) + format;
-      cout << "save common image " << numPic << endl;
-
-      //write to JPG
-      cv::imwrite(PicNameR.data(), image, compression_params);
-      cv::imwrite(PicNameL.data(), image1, compression_params);
-      numPic++;
-    }
-
-    //save Mat to avi
-    if (chV == 'y' || chV == 'Y'){
-      outputVideo.write(image);
-      //cout << "frameCount: " << frameCount++ << endl;
-      outputVideo1.write(image1);
-      //cout << "frameCount1: " << frameCount1++ << endl;
-    }
-    if(display){
-      key = cv::waitKey(1); // à diminuer pour les tests
-    }
-      display = !display;
-  }
+  	cv::Size imageSize(CAMERA_WIDTH, CAMERA_HEIGHT);
+  	
+  	BusManager busMgr;
+  	unsigned int numCameras;
+  	Error error, error1;
+  	CameraInfo camInfo, camInfo1;
+  	Camera camera, camera1;
+
+  	//========================Print Build information======================
+  	
+  	PrintBuildInfo();
+
+
+  	//========================get camera numbers======================
+
+  	error = busMgr.GetNumOfCameras(&numCameras);
+  	if (error != PGRERROR_OK){
+		PrintError(error);
+    	return -1;
+  	}else{
+    	cout << "Number of cameras detected : " << numCameras << endl;
+  	}
+
+
+  	//========================get two cameras' id======================
+  	
+  	//Error* errorArray = new Error[numCameras];
+  	//PGRGuid* guidArray = new PGRGuid[numCameras];
+  	//vector<Error> errorArray(numCameras);
+  	//vector<PGRGuid> guidArray(numCameras);
+  	Error errorArray[numCameras];
+  	PGRGuid guidArray[numCameras];
+  	
+  	for(unsigned int i = 0; i < numCameras; i++){
+  		errorArray[i] = busMgr.GetCameraFromIndex(i, &guidArray[i]);
+  		if(PGRERROR_OK != errorArray[i].GetType()){
+  			PrintError(errorArray[i]);
+  			return -1;
+  		}
+  	}
+  	
+  	
+  	//========================Connect the cameras====================== 
+
+	//Camera* cameraArray = new Camera[numCameras];
+	//vector<Camera> cameraArray(numCameras);
+	Camera cameraArray[numCameras];
+	
+	for(unsigned int i = 0; i < numCameras; i++){
+		errorArray[i] = cameraArray[i].Connect(&guidArray[i]);
+		if(PGRERROR_OK != errorArray[i].GetType()){
+			cout << "Failed to connect to camera n°" << i << endl;
+			return -1;
+		}else{
+			cout << "Successfully connected to camera n°" << i << endl;
+		}
+	}
+
+
+  	/*
+  	  PropertyType mtype = FRAME_RATE;
+  	  Property mproperty(mtype);
+  	  //mproperty.present = true;
+  	  mproperty.absControl = true;
+  	  mproperty.onOff = true;
+  	  mproperty.onePush = false;
+  	  mproperty.autoManualMode = false;
+  	  mproperty.absValue = 30;
+  	  error = camera.SetProperty(&mproperty, false);
+  	  error1 = camera1.SetProperty(&mproperty, false);
+  	  PropertyInfo minfo(mtype);
+  	  minfo.onOffSupported = true;
+  	  minfo.readOutSupported = true;
+  	  error = camera.GetPropertyInfo(&minfo);
+  	  cout << minfo.absMax <<" " <<minfo.absMin << endl;*/
+  	/*
+  	  FC2Config mconfig;
+  	  mconfig.grabMode = BUFFER_FRAMES;
+  	  mconfig.numBuffers = 30;
+  	  error = camera.SetConfiguration(&mconfig);
+  	  error1 = camera1.SetConfiguration(&mconfig);
+  	  FC2Config readconfig;
+  	  error = camera.GetConfiguration(&readconfig);
+  	  cout << "setconfig " << readconfig.grabMode << " " << 
+  	  readconfig.numBuffers << endl;*/
+  	//videomode framerate
+  	/*VideoMode mvideomode = VIDEOMODE_800x600RGB;
+  	  FrameRate mframerate = FRAMERATE_30;
+  	  error = camera.SetVideoModeAndFrameRate(mvideomode, mframerate);
+  	  error1 = camera1.SetVideoModeAndFrameRate(mvideomode, mframerate);*/
+  	//cout << "videomode = " << mvideomode << ", framerate = " << 
+  	//mframerate << endl;
+  	//camera.GetProperty(&mproperty);
+  	//camera.SetConfiguration();
   
   
-  myfile2.close();
+  	// ========================Get the camera info and print it out====================== 
+
+	CameraInfo camInfoArray[numCameras];
+
+	for(unsigned int i = 0; i < numCameras; i++){
+		errorArray[i] = cameraArray[i].GetCameraInfo(&camInfoArray[i]);
+		if(PGRERROR_OK != errorArray[i].GetType()){
+			cout << "Failed to get informations from camera n°" << i << endl;
+			return -1;
+		}else{
+			cout << "==================== Camera n°" << i << " ====================" << endl;
+			PrintCameraInfo(&camInfoArray[i]);
+		}
+	}
+
+  	/*
+    	std::cout << "The camera0 you use is " << camInfo.vendorName << " "
+    	<< camInfo.modelName << " "
+    	<< camInfo.serialNumber << std::endl;
+    */
+
+  	// ========================StartCapture====================== 
+  	
+  	for(unsigned int i = 0; i < numCameras; i++){
+  		errorArray[i] = cameraArray[i].StartCapture();
+  		if(PGRERROR_ISOCH_BANDWIDTH_EXCEEDED == errorArray[i].GetType()){
+  			cout << "Bandwidth exceeded (camera n°" << i << ")" << endl;
+  			return -1;
+  		}else{
+  			if(PGRERROR_OK != errorArray[i].GetType()){
+  				cout << "Failed to start image capture (camera n°" << i << ")" << endl;
+  				return -1;
+  			}
+  		}
+  	}
+
+  	// ===============================Take video / picture================================== 
+  	// =====================take photos=============================
+  	//two modes: take pictures for calibration, or just take common pictures
+
+	
+	string date0 = __DATE__;
+	string date = replaceSpace(date0);
+	
+	// create folder
+	char* folder = const_cast<char*>(date.c_str());
+	char const *make = "mkdir "; // md pour windows
+	char* foldermake = new char[strlen(folder) + strlen(make) + 1];
+	strcpy(foldermake, make);
+	strcat(foldermake, folder);
+	system(foldermake);
+	
+	cout << "==================== Picture & Videos ====================" << endl;
+	cout << "Do you want to take pictures for calibration (press SPACE to take pictures) ? (y/n)" << endl;
+	
+	char chP;
+	//cin >> chP;
+	chP = 'N';
+  	
+  	int numCalib = 0;
+  	int numPic = 0;
+  	const string right = "_right";
+  	const string left = "_left";
+  	const string stereo = "_Stereo";
+  	const string pic = "_Pic";
+  	const string format = ".jpg";
+  	string PicNameL;
+  	string PicNameR;
+	
+  	//create image list
+  	
+  	if('y' == chP || 'Y' == chP){
+  		const string list = "_List";
+  		const string format_list = ".yaml";
+  		cv::FileStorage fsC, fsS; // fsCamera, fsStereo
+  		for(unsigned int i = 0; i < numCameras; i++){
+			string output_list = date + "/" + date + "_camera_" + i + list + format_list;
+			fsC.open(output_list, cv::FileStorage::WRITE);
+			fsC << "images[" << endl;
+			output_list = date + "/" + date + "_stereo" + list + format_list;
+			fsS.open(output_list, cv::FileStorage::WRITE);
+			fsS << "images[" << endl;
+  		}
+	
+  	}
+  	
+	
+  	//============================create a video==============================
+	
+  	cout << "Do you want to take videos (video begins immediately) ? (y/n) ";
+  	char chV;
+  	//cin >> chV;
+  	chV='Y';
+  	
+  	cv::VideoWriter outputVideoArray[numCameras];
+  	if('y' == chV || 'Y' == chV){
+  		for(unsigned int i = 0; i < numCameras; i++){
+  			string name = date + "/" + date + "_camera_" + i + ".avi";
+  			outputVideoArray[i].open(name, CV_FOURCC('X', 'V', 'I', 'D'), NB_FPS, cv::Size(CAMERA_WIDTH, CAMERA_HEIGHT), true);
+  			if(!outputVideoArray[i].isOpened()){
+  				cout << "Could not open the output video n°" << i << " for write" << endl;
+  			}
+  		}
+  	}
+	
+	
+  	//====================================Main loop==================================== 
+	
+	string windowName = "Cameras : ";
+	for(unsigned int = 0; i < numCameras; i++){
+		windowName += i + " - ";
+	}
+  	cv::namedWindow(windowName, CV_WINDOW_NORMAL);
+  	
+  	char key = 0;
+	
+  	time_t start, end;
+  	double fps;
+  	int counter = 0;
+  	double sec;
+  	
+  	ofstream myfile2(LATENCE_BENCH,ios::app);
+  	// pour afficher une frame sur deux
+  	bool display = false;
+  	
+  	(BENCH)?time(&start); // lancement du timer pour les benchmarks
+  	
+  	Image rawImageArray[numCameras];
+  	Image rgbImageArray[numCameras];
+  	
+  	while (/*key != 27*/counter<500){
+  		++counter;
+  		
+    	// Get the image
+    	for(unsigned int i = 0; i < numCameras; i++){
+    		errorArray[i] = cameraArray[i].RetrieveBuffer(&rawImageArray[i]);
+    		if(PGRERROR_OK != errorArray[i].GetType()){
+    			cout << "capture error (camera n°" << i << ")" << endl;
+    			return -1;
+    		}
+    	}
+    	
+    	for(unsigned int i = 0; i < numCameras; i++){
+    		// convert to RGB
+    		rawImageArray[i].Convert(FlyCapture2::PIXEL_FORMAT_BGR, &rgbImageArray[i]);
+    		unsigned int rowBytes = (double)rgbImageArray[i].GetReceivedDataSize() / (double)rgbImageArray[i].GetRows();
+    		// convert to OpenCV Mat
+    		cv::Mat image = cv::Mat(rgbImageArray[i].GetRows(), rgbImageArray[i].GetCols(), CV_8UC3, rgbImageArray[i].GetData(), rowBytes);
+    		// a bien définir
+    		// concerne l'affichage dans la fenetre	
+    	}
+
+    	//cv::imshow("leftCamera", image1);
+    	//two images in a same window
+    	cv::Size sizeR = image.size();
+    	cv::Size sizeL = image1.size();
+    	cv::Mat imageROI(sizeL.height, sizeL.width + sizeR.width, CV_8UC3);
+    	cv::Mat wright(imageROI, cv::Rect(sizeL.width, 0, sizeR.width, sizeR.height));
+    	image.copyTo(wright);
+    	cv::Mat wleft(imageROI, cv::Rect(0, 0, sizeL.width, sizeL.height));
+    	image1.copyTo(wleft);
+    	imshow("Cameras: left - right", imageROI);
+	
+    	//cv::setMouseCallback("Cameras: left - right", on_mouse, 0);
+    	//==============================take pictures===========================
+    	//compression-JPG
+	
+    	vector<int> compression_params;
+    	compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+    	compression_params.push_back(100);
+	
+    
+    	//calibration pic
+    	if (key  == ' ' && (chP == 'y' || chP == 'Y')){
+      	//attention: no space in names
+      		PicNameR = date + "\\" + date + right + int2str(numCalib) + format;
+      		PicNameL = date + "\\" + date + left + int2str(numCalib) + format;
+      		cout << "save calibration image " << numCalib << endl;
+
+      		//write to JPG
+      		cv::imwrite(PicNameR.data(), image, compression_params);
+      		cv::imwrite(PicNameL.data(), image1, compression_params);
+
+      		//write to image list
+      		fsL << PicNameL;
+      		fsR << PicNameR;
+      		fsS << PicNameL;
+      		fsS << PicNameR;
+      		numCalib++;
+    	}
+
+    	//common pic
+    	string time = __TIME__;
+    	if (key == ' ' && (chP == 'n' || chP == 'N')){
+      		//attention: no space in names
+      		PicNameR = date + "\\" + time + right + pic + int2str(numPic) + format;
+      		PicNameL = date + "\\" + time + left + pic + int2str(numPic) + format;
+      		cout << "save common image " << numPic << endl;
+
+      		//write to JPG
+      		cv::imwrite(PicNameR.data(), image, compression_params);
+      		cv::imwrite(PicNameL.data(), image1, compression_params);
+      		numPic++;
+    	}
+
+    	//save Mat to avi
+    	if (chV == 'y' || chV == 'Y'){
+      		outputVideo.write(image);
+      		//cout << "frameCount: " << frameCount++ << endl;
+      		outputVideo1.write(image1);
+      		//cout << "frameCount1: " << frameCount1++ << endl;
+    	}
+    	if(display){
+      		key = cv::waitKey(1); // à diminuer pour les tests
+    	}
+      	display = !display;
+  	}
+  
+  
+  	myfile2.close();
 
 
 
