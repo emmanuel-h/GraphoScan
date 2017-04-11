@@ -23,9 +23,7 @@
 #define CAMERA_HEIGHT 964
 #define NB_FPS 30
 
-#define BENCH true
-
-#define MATLAB_CONFIG_FILE "CalibLeft_Matlab_1207_03.txt"
+#define BENCH TRUE
 
 using namespace FlyCapture2;
 using namespace std;
@@ -128,9 +126,9 @@ bool ReadInnerParam(const char* filename, long double cm[3][3], long double dc[5
     long double tmp;
     for (int i = 0; i < 3; i++){
       for (int j = 0; j < 3; j++){
-        //long double* tmp =cameraMatrix.ptr<long double>(i);
-        fin >> tmp;
-        cm[i][j] = tmp;
+	//long double* tmp =cameraMatrix.ptr<long double>(i);
+	fin >> tmp;
+	cm[i][j] = tmp;
       }
     }
     for (int i = 0; i < 5; i++){
@@ -316,46 +314,40 @@ int main(int argc, char* argv[]){
   	const string format = ".jpg";
   	string PicNameL;
   	string PicNameR;
-
-  	//create image list
-    cv::FileStorage fileStorageArray[numCameras];
-    cv::FileStorage fileStorageStereo;
 	
+  	//create image list
+  	
   	if('y' == chP || 'Y' == chP){
   		const string list = "_List";
   		const string format_list = ".yaml";
   		cv::FileStorage fsC, fsS; // fsCamera, fsStereo
   		for(unsigned int i = 0; i < numCameras; i++){
-            string output_list = date + "/" + date + "_camera_" + int2str(i) + list + format_list;
-            fileStorageArray[i].open(output_list, cv::FileStorage::WRITE);
-            fileStorageArray[i] << "images[";
+			string output_list = date + "/" + date + "_camera_" + i + list + format_list;
+			fsC.open(output_list, cv::FileStorage::WRITE);
+			fsC << "images[" << endl;
+			output_list = date + "/" + date + "_stereo" + list + format_list;
+			fsS.open(output_list, cv::FileStorage::WRITE);
+			fsS << "images[" << endl;
   		}
-        string output_list = date + "/" + date + "_stereo" + list + format_list;
-        fileStorageStereo.open(output_list, cv::FileStorage::WRITE);
-        fileStorageStereo << "images[";
 	
   	}
   	
 	
   	//============================create a video==============================
 	
-  	cout << "Do you want to take videos (video begins immediately) ? (y/n) " << endl;
+  	cout << "Do you want to take videos (video begins immediately) ? (y/n) ";
   	char chV;
   	//cin >> chV;
   	chV='Y';
-  	cv::VideoWriter outputVideoArray[numCameras + 1];
+  	
+  	cv::VideoWriter outputVideoArray[numCameras];
   	if('y' == chV || 'Y' == chV){
   		for(unsigned int i = 0; i < numCameras; i++){
-            string name = date + "/" + date + "_camera_" + int2str(i) + ".avi";
+  			string name = date + "/" + date + "_camera_" + i + ".avi";
   			outputVideoArray[i].open(name, CV_FOURCC('X', 'V', 'I', 'D'), NB_FPS, cv::Size(CAMERA_WIDTH, CAMERA_HEIGHT), true);
   			if(!outputVideoArray[i].isOpened()){
   				cout << "Could not open the output video n°" << i << " for write" << endl;
   			}
-  		}
-  		string nameStereo = date + "/" + date + "_stereo_" + ".avi";
-  		outputVideoArray[numCameras].open(nameStereo, CV_FOURCC('X', 'V', 'I', 'D'), NB_FPS, cv::Size(CAMERA_WIDTH * 2, CAMERA_HEIGHT), true);
-  		if(!outputVideoArray[numCameras].isOpened()){
-  			cout << "Could not open the output video stereo for write" << endl;
   		}
   	}
 	
@@ -363,33 +355,29 @@ int main(int argc, char* argv[]){
   	//====================================Main loop==================================== 
 	
 	string windowName = "Cameras : ";
-	for(unsigned int i = 0; i < numCameras; i++){
-      windowName += int2str(i) + " - ";
+	for(unsigned int = 0; i < numCameras; i++){
+		windowName += i + " - ";
 	}
   	cv::namedWindow(windowName, CV_WINDOW_NORMAL);
+  	
   	char key = 0;
 	
-  	timeval start, end;
-  	float counter = 0.0;
+  	time_t start, end;
+  	double fps;
+  	int counter = 0;
+  	double sec;
   	
   	ofstream myfile2(LATENCE_BENCH,ios::app);
   	// pour afficher une frame sur deux
   	bool display = false;
-
-    if(BENCH){
-      gettimeofday(&start,0); // lancement du timer pour les benchmarks
-    }
-  	// (BENCH)?time(&start); // lancement du timer pour les benchmarks
+  	
+  	(BENCH)?time(&start); // lancement du timer pour les benchmarks
   	
   	Image rawImageArray[numCameras];
   	Image rgbImageArray[numCameras];
   	
-  	
-  	
-  	// =============== Main loop ===============
-  	
-  	while (/*key != 27*/counter<2000.0){
-  		counter+=1.0;
+  	while (/*key != 27*/counter<500){
+  		++counter;
   		
     	// Get the image
     	for(unsigned int i = 0; i < numCameras; i++){
@@ -399,35 +387,27 @@ int main(int argc, char* argv[]){
     			return -1;
     		}
     	}
-    	//cv::Size sizeArray[numCameras];
-    	cv::Mat imageArray[numCameras];
-    	int totalWidth = 0;
-    	int maxHeight = 0;
+    	
     	for(unsigned int i = 0; i < numCameras; i++){
     		// convert to RGB
     		rawImageArray[i].Convert(FlyCapture2::PIXEL_FORMAT_BGR, &rgbImageArray[i]);
     		unsigned int rowBytes = (double)rgbImageArray[i].GetReceivedDataSize() / (double)rgbImageArray[i].GetRows();
     		// convert to OpenCV Mat
-    		imageArray[i] = cv::Mat(rgbImageArray[i].GetRows(), rgbImageArray[i].GetCols(), CV_8UC3, rgbImageArray[i].GetData(), rowBytes);
+    		cv::Mat image = cv::Mat(rgbImageArray[i].GetRows(), rgbImageArray[i].GetCols(), CV_8UC3, rgbImageArray[i].GetData(), rowBytes);
     		// a bien définir
-    		// concerne l'affichage dans la fenetre
-    		totalWidth += imageArray[i].size().width;
-    		if(maxHeight < imageArray[i].size().height){
-    			maxHeight = imageArray[i].size().height;
-    		}
+    		// concerne l'affichage dans la fenetre	
     	}
-    	cv::Mat imageROI(maxHeight, totalWidth, CV_8UC3);
-    	int offset = 0;
-    	string s = "Cameras : ";
 
-    	for(unsigned int i = 0; i < numCameras; i++){
-            cv::Mat matrix(imageROI, cv::Rect(offset, 0, imageArray[i].size().width, imageArray[i].size().height));
-    		imageArray[i].copyTo(matrix);
-    		offset += imageArray[i].size().width;
-    		s += int2str(i) + "  ";
-        }
-    	imshow(windowName, imageROI);
-    	
+    	//cv::imshow("leftCamera", image1);
+    	//two images in a same window
+    	cv::Size sizeR = image.size();
+    	cv::Size sizeL = image1.size();
+    	cv::Mat imageROI(sizeL.height, sizeL.width + sizeR.width, CV_8UC3);
+    	cv::Mat wright(imageROI, cv::Rect(sizeL.width, 0, sizeR.width, sizeR.height));
+    	image.copyTo(wright);
+    	cv::Mat wleft(imageROI, cv::Rect(0, 0, sizeL.width, sizeL.height));
+    	image1.copyTo(wleft);
+    	imshow("Cameras: left - right", imageROI);
 	
     	//cv::setMouseCallback("Cameras: left - right", on_mouse, 0);
     	//==============================take pictures===========================
@@ -441,14 +421,19 @@ int main(int argc, char* argv[]){
     	//calibration pic
     	if (key  == ' ' && (chP == 'y' || chP == 'Y')){
       	//attention: no space in names
-      		for(unsigned int i = 0; i < numCameras; i++){
-              string name = date + "/" + date + "camera-" + int2str(i) + "_" + int2str(numCalib) + format;
-      			cout << "save calibration image n°" << numCalib << endl;
-      			cv::imwrite(name, imageArray[i], compression_params);
+      		PicNameR = date + "\\" + date + right + int2str(numCalib) + format;
+      		PicNameL = date + "\\" + date + left + int2str(numCalib) + format;
+      		cout << "save calibration image " << numCalib << endl;
 
-                fileStorageArray[i] << name;
-                fileStorageStereo << name;
-      		}
+      		//write to JPG
+      		cv::imwrite(PicNameR.data(), image, compression_params);
+      		cv::imwrite(PicNameL.data(), image1, compression_params);
+
+      		//write to image list
+      		fsL << PicNameL;
+      		fsR << PicNameR;
+      		fsS << PicNameL;
+      		fsS << PicNameR;
       		numCalib++;
     	}
 
@@ -456,25 +441,26 @@ int main(int argc, char* argv[]){
     	string time = __TIME__;
     	if (key == ' ' && (chP == 'n' || chP == 'N')){
       		//attention: no space in names
-      		for(unsigned int i = 0; i < numCameras; i++){
-              string name = date + "/" + date + "camera-" + int2str(i) + "_pic" + int2str(numPic) + format;
-      			cout << "save common image " << numPic << endl;
-      			cv::imwrite(name, imageArray[i], compression_params);
-      		}
+      		PicNameR = date + "\\" + time + right + pic + int2str(numPic) + format;
+      		PicNameL = date + "\\" + time + left + pic + int2str(numPic) + format;
+      		cout << "save common image " << numPic << endl;
+
+      		//write to JPG
+      		cv::imwrite(PicNameR.data(), image, compression_params);
+      		cv::imwrite(PicNameL.data(), image1, compression_params);
       		numPic++;
     	}
 
     	//save Mat to avi
     	if (chV == 'y' || chV == 'Y'){
-          /*for(unsigned int i = 0; i < numCameras; i++){
-    			outputVideoArray[i].write(imageArray[i]);
-                }*/
-    		outputVideoArray[numCameras].write(imageROI);
+      		outputVideo.write(image);
+      		//cout << "frameCount: " << frameCount++ << endl;
+      		outputVideo1.write(image1);
+      		//cout << "frameCount1: " << frameCount1++ << endl;
     	}
-    	
     	if(display){
-          key = cv::waitKey(1); // à diminuer pour les tests
-        }
+      		key = cv::waitKey(1); // à diminuer pour les tests
+    	}
       	display = !display;
   	}
   
@@ -482,165 +468,161 @@ int main(int argc, char* argv[]){
   	myfile2.close();
 
 
-    if(BENCH){
-      gettimeofday(&end,0); // lancement du timer pour les benchmarks
-      double timeStartUsec = start.tv_usec;
-      while(timeStartUsec > 1.0){
-        timeStartUsec/=10.0;
-      }
-      double timeStart = start.tv_sec+timeStartUsec;
-      
-      double timeEndUsec = end.tv_usec;
-      while(timeEndUsec > 1){
-        timeEndUsec/=10;
-      }
-      double timeEnd = end.tv_sec+timeEndUsec;      
 
-      cout << timeStart << " " << timeEnd << endl;
-      double sec=timeEnd-timeStart;
-      cout << "sec:"<<sec<<endl;
 
-      double fps = counter / sec;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
-      ofstream myfile(RESULT_BENCH,ios::app);
-      myfile << fps << endl;
-      myfile.close();
-    }
   
-    //calibration pic list
-    if (chP == 'y' || chP == 'Y'){
-        for(unsigned int i = 0; i < numCameras; i++){
-            fileStorageArray[i] << "]";
-        }
-        fileStorageStereo << "]";
+  time(&end);
+  sec = difftime (end, start);      
+  fps = counter / sec;
+  cout << fps << endl;
+  
+  ofstream myfile(RESULT_BENCH,ios::app);
+  myfile << fps << endl;
+  myfile.close();
+  
+  //calibration pic list
+  if (chP == 'y' || chP == 'Y'){
+    fsL << "]";
+    fsR << "]";
+    fsS << "]";
+  }
+
+  cout << "countframe = " << countfram << endl;
+  outputVideo.release();
+  outputVideo1.release();
+  error = camera.StopCapture();
+  error1 = camera1.StopCapture();
+  camera.Disconnect();
+  camera1.Disconnect();
+
+  /*=============================undistortion=============================*/
+
+  long double cmL[3][3], cmR[3][3], dcL[5], dcR[5];
+  cout << endl << "============Read calibration parameters from files===============" << endl;
+  ReadInnerParam("CalibLeft_Matlab_1207_03.txt", cmL, dcL);
+  ReadInnerParam("CalibRight_Matlab_1207_03.txt", cmR, dcR);
+  cv::Mat cameraMatrix_L = cv::Mat(3, 3, CV_64FC1, cmL);
+  cv::Mat distCoeffs_L = cv::Mat(1, 5, CV_64FC1, dcL);
+  cv::Mat cameraMatrix_R = cv::Mat(3, 3, CV_64FC1, cmR);
+  cv::Mat distCoeffs_R = cv::Mat(1, 5, CV_64FC1, dcR);
+  cout << "=====>cameraMatrix_L is: " << endl << cameraMatrix_L << endl;
+  cout << "=====>disCoeffs_L is:" << endl << distCoeffs_L << endl << endl;
+  cout << "=====>cameraMatrix_R is: " << endl << cameraMatrix_R << endl;
+  cout << "=====>disCoeffs_L is:" << endl << distCoeffs_R << endl << endl;
+  cv::Mat map1_L, map1_R, map2_L, map2_R;
+  cv::initUndistortRectifyMap(cameraMatrix_L, distCoeffs_L, cv::Mat(), cv::Mat(), imageSize, CV_32F, map1_L, map2_L);
+  cv::initUndistortRectifyMap(cameraMatrix_R, distCoeffs_R, cv::Mat(), cv::Mat(), imageSize, CV_32F, map1_R, map2_R);
+
+  //================================load original videos======================================
+
+  string sourceL = "Jul_20_2016_video_left.avi";
+  string sourceR = "Jul_20_2016_video_right.avi";
+  cv::VideoCapture cam_L, cam_R;
+  cam_L.open(sourceL);
+  if (!cam_L.isOpened()){
+    cout << "could not open " << sourceL << endl;
+    return -1;
+  }
+
+  cam_R.open(sourceR);
+  if (!cam_R.isOpened()){
+    cout << "could not open " << sourceR << endl;
+    return -1;
+  }
+
+  cout << "frame: " << cam_L.get(CV_CAP_PROP_FRAME_COUNT) << endl;
+  bool stop(false);
+
+  //cv::namedWindow("before-after-left", CV_WINDOW_NORMAL);
+  //cv::namedWindow("before-after-right", CV_WINDOW_NORMAL);
+
+  cv::namedWindow("left-right-before-after", CV_WINDOW_NORMAL);
+
+  //============================save undistortion video=====================================
+
+  cv::VideoWriter undist_L, undist_R;
+  cv::VideoWriter Four;
+  undist_L.open("undist_XIAODI_L.avi", CV_FOURCC('X', 'V', 'I', 'D'), 10, cv::Size(1288, 964), true);
+  if (!undist_L.isOpened()){
+    cout << "could not open the output video for write" << endl;
+    return -1;
+  }
+
+  undist_R.open("undist_XIAODI_R.avi", CV_FOURCC('X', 'V', 'I', 'D'), 10, cv::Size(1288, 964), true);
+
+  if (!undist_R.isOpened()){
+    cout << "could not open the output video1 for write" << endl;
+    return -1;
+  }
+
+  Four.open("total_image_four_in_one_XIAODI.avi", CV_FOURCC('X', 'V', 'I', 'D'), 10, cv::Size(1288 * 2, 964 * 2), true);
+
+  if (!Four.isOpened()){
+    cout << "could not open the output video Four for write" << endl;
+    return -1;
+  }
+
+  //============================================MAIN LOOP=============================================
+
+  int i = 0;
+  while (!stop){
+    cv::Mat src_L, src_R, dst_L, dst_R;
+    if (!cam_L.read(src_L))
+      break;
+    if (!cam_R.read(src_R))
+      break;
+
+    //CalibLeft.rectifyMap(src_L,dst_L);
+    //CalibRight.rectifyMap(src_R, dst_R);
+
+    cv::remap(src_L, dst_L, map1_L, map2_L, CV_INTER_LINEAR);
+    cv::remap(src_R, dst_R, map1_R, map2_R, CV_INTER_LINEAR);
+    cv::Mat ROI4(964 * 2, 1288 * 2, CV_8UC3);
+    cv::Mat LeftTop(ROI4, cv::Rect(0, 0, 1288, 964));
+    src_L.copyTo(LeftTop);
+    cv::Mat RightTop(ROI4, cv::Rect(1288, 0, 1288, 964));
+    dst_L.copyTo(RightTop);
+    cv::Mat LeftDown(ROI4, cv::Rect(0, 964, 1288, 964));
+    src_R.copyTo(LeftDown);
+    cv::Mat RightDown(ROI4, cv::Rect(1288, 964, 1288, 964));
+    dst_R.copyTo(RightDown);
+    imshow("left-right-before-after", ROI4);
+    undist_L.write(dst_L);
+    undist_R.write(dst_R);
+    Four.write(ROI4);
+    i++;
+    //cout << "frame " << i << endl;
+    if (cv::waitKey(30) == 27 || i > cam_L.get(CV_CAP_PROP_FRAME_COUNT)){
+      stop = true;
     }
-
-    //cout << "countframe = " << countfram << endl;
-    for(unsigned int i = 0; i < numCameras; i++){
-        outputVideoArray[i].release();
-        errorArray[i] = cameraArray[i].StopCapture();
-        cameraArray[i].Disconnect();
-    }
-
-
-
-
-
-    
-    /*=============================undistortion=============================*/
-
-    long double cmL[3][3], cmR[3][3], dcL[5], dcR[5];
-    cout << endl << "============Read calibration parameters from files===============" << endl;
-
-    ReadInnerParam(MATLAB_CONFIG_FILE, cmL, dcL);
-
-    ReadInnerParam("CalibRight_Matlab_1207_03.txt", cmR, dcR);
-
-    cv::Mat cameraMatrix_L = cv::Mat(3, 3, CV_64FC1, cmL);
-    cv::Mat distCoeffs_L = cv::Mat(1, 5, CV_64FC1, dcL);
-
-    cv::Mat cameraMatrix_R = cv::Mat(3, 3, CV_64FC1, cmR);
-    cv::Mat distCoeffs_R = cv::Mat(1, 5, CV_64FC1, dcR);
-
-    cout << "=====>cameraMatrix_L is: " << endl << cameraMatrix_L << endl;
-    cout << "=====>disCoeffs_L is:" << endl << distCoeffs_L << endl << endl;
-    cout << "=====>cameraMatrix_R is: " << endl << cameraMatrix_R << endl;
-    cout << "=====>disCoeffs_L is:" << endl << distCoeffs_R << endl << endl;
-
-    cv::Mat map1_L, map1_R, map2_L, map2_R;
-
-    cv::initUndistortRectifyMap(cameraMatrix_L, distCoeffs_L, cv::Mat(), cv::Mat(), imageSize, CV_32F, map1_L, map2_L);
-    cv::initUndistortRectifyMap(cameraMatrix_R, distCoeffs_R, cv::Mat(), cv::Mat(), imageSize, CV_32F, map1_R, map2_R);
-
-    //================================load original videos======================================
-
-    string sourceL = "Jul_20_2016_video_left.avi";
-    string sourceR = "Jul_20_2016_video_right.avi";
-    cv::VideoCapture cam_L, cam_R;
-    cam_L.open(sourceL);
-    if (!cam_L.isOpened()){
-        cout << "could not open " << sourceL << endl;
-        return -1;
-    }
-
-    cam_R.open(sourceR);
-    if (!cam_R.isOpened()){
-        cout << "could not open " << sourceR << endl;
-        return -1;
-    }
-
-    cout << "frame: " << cam_L.get(CV_CAP_PROP_FRAME_COUNT) << endl;
-    bool stop(false);
-
-    //cv::namedWindow("before-after-left", CV_WINDOW_NORMAL);
-    //cv::namedWindow("before-after-right", CV_WINDOW_NORMAL);
-
-    cv::namedWindow("left-right-before-after", CV_WINDOW_NORMAL);
-
-    //============================save undistortion video=====================================
-
-    cv::VideoWriter undist_L, undist_R;
-    cv::VideoWriter Four;
-    undist_L.open("undist_XIAODI_L.avi", CV_FOURCC('X', 'V', 'I', 'D'), 10, cv::Size(1288, 964), true);
-    if (!undist_L.isOpened()){
-        cout << "could not open the output video for write" << endl;
-        return -1;
-    }
-
-    undist_R.open("undist_XIAODI_R.avi", CV_FOURCC('X', 'V', 'I', 'D'), 10, cv::Size(1288, 964), true);
-
-    if (!undist_R.isOpened()){
-        cout << "could not open the output video1 for write" << endl;
-        return -1;
-    }
-
-    Four.open("total_image_four_in_one_XIAODI.avi", CV_FOURCC('X', 'V', 'I', 'D'), 10, cv::Size(1288 * 2, 964 * 2), true);
-
-    if (!Four.isOpened()){
-        cout << "could not open the output video Four for write" << endl;
-        return -1;
-    }
-
-    //============================================MAIN LOOP=============================================
-
-    int i = 0;
-    while (!stop){
-      cv::Mat src_L, src_R, dst_L, dst_R;
-      if (!cam_L.read(src_L))
-          break;
-      if (!cam_R.read(src_R))
-          break;
-
-      //CalibLeft.rectifyMap(src_L,dst_L);
-      //CalibRight.rectifyMap(src_R, dst_R);
-
-      cv::remap(src_L, dst_L, map1_L, map2_L, CV_INTER_LINEAR);
-      cv::remap(src_R, dst_R, map1_R, map2_R, CV_INTER_LINEAR);
-      cv::Mat ROI4(964 * 2, 1288 * 2, CV_8UC3);
-      cv::Mat LeftTop(ROI4, cv::Rect(0, 0, 1288, 964));
-      src_L.copyTo(LeftTop);
-      cv::Mat RightTop(ROI4, cv::Rect(1288, 0, 1288, 964));
-      dst_L.copyTo(RightTop);
-      cv::Mat LeftDown(ROI4, cv::Rect(0, 964, 1288, 964));
-      src_R.copyTo(LeftDown);
-      cv::Mat RightDown(ROI4, cv::Rect(1288, 964, 1288, 964));
-      dst_R.copyTo(RightDown);
-      imshow("left-right-before-after", ROI4);
-      undist_L.write(dst_L);
-      undist_R.write(dst_R);
-      Four.write(ROI4);
-      i++;
-      //cout << "frame " << i << endl;
-      if (cv::waitKey(30) == 27 || i > cam_L.get(CV_CAP_PROP_FRAME_COUNT)){
-          stop = true;
-      }
-    }
-    cout << "frame = " << i << endl;
-    undist_L.release();
-    undist_R.release();
-    Four.release();
-    cam_L.release();
-    cam_R.release();
-    
-    return 0;
+  }
+  cout << "frame = " << i << endl;
+  undist_L.release();
+  undist_R.release();
+  Four.release();
+  cam_L.release();
+  cam_R.release();
+  return 0;
 }
