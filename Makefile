@@ -27,8 +27,8 @@ clean:
 
 # Compilation
 ${NAME}: ${OBJ}
-	${CXX} ${OBJ} -o ${NAME} ${LIBS} ${OPENCV} ${ONELINE}
+	${CXX} ${OBJ} -o ${NAME} -fopenmp ${LIBS} ${OPENCV} ${ONELINE}
 
 # Objets intermédiaires
 ${OBJ}: %.o : %.cpp
-	${CXX} ${INC} -Wall -c $< -o $@
+	${CXX} ${INC} -fopenmp -Wall -c $< -o $@
