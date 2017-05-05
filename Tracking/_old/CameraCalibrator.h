@@ -1,5 +1,5 @@
 #pragma once
-#include <opencv2\opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <iostream>
 #include <fstream>
 
@@ -55,8 +55,8 @@ public:
 private:
 	vector<cv::String> m_filename;
 	cv::Size m_boardSize;
-	vector<vector<cv::Point2f>> m_srcPoints;
-	vector<vector<cv::Point3f>> m_dstPoints;
+	vector<vector<cv::Point2f> > m_srcPoints;
+	vector<vector<cv::Point3f> > m_dstPoints;
 	cv::Mat m_distCoeffs;
 	cv::Mat m_cameraMatrix;
 

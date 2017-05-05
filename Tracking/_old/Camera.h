@@ -1,8 +1,17 @@
 #pragma once
 
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
+//Pour Linux
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glut.h>
+#include <GL/freeglut.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+//Inutile avec Linux
+//#include <glm\glm.hpp>
+//#include <glm\gtc\matrix_transform.hpp>
+//#include <glm\gtc\type_ptr.hpp>
 
 enum Camera_Mouvement
 {
@@ -75,7 +84,7 @@ public:
 
 		glm::vec3 front = mFront;
 		glm::vec3 worldUp = mWorldUp;
-		glm::vec3 right = mRight;
+		//glm::vec3 right = mRight;
 
 		glm::vec3 r, u, d;											//x,y,z
 		d = glm::normalize(-front);									//zaxis

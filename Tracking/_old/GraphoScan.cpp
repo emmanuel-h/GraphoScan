@@ -1,4 +1,5 @@
 #include "GraphoScan.h"
+#include "HOG.cpp"
 
 #define MIN_RECT_WIDTH 50
 #define MIN_RECT_HEIGHT 50
