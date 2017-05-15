@@ -1,6 +1,8 @@
-#include "CameraCalibrator.h"
+#include "CameraCalibrator.hpp"
 
-using namespace std;
+#include <opencv2/opencv.hpp>
+#include <iostream>
+#include <fstream>
 
 void CameraCalibrator::findChessboardPoints_File()
 {

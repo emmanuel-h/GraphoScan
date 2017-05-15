@@ -1,13 +1,15 @@
+//#include "Shader.h"
+//#include "Texture2D.h"
+//#include "Camera.h"
+//#include "OpenGL.cpp"
 
-#include "Shader.h"
-#include "Texture2D.h"
-#include "Camera.h"
-#include "OpenGL.h"
-#include "Lib.h"
+#include "GraphoScan.cpp"
+#include "OpenGL.cpp"
 
-//#define OPENCV
-#define OPENGL
+#define OPENCV
+//#define OPENGL
 //#define STEREOVISION
+
 
 vector<Point2f> pts;
 bool isFrameSelected = false;
@@ -34,8 +36,9 @@ int main()
 
 
 #ifdef OPENCV
-	framesOfVideo("undist_2007_L.avi");
-	//framesOfVideo("Test_xvid_001.avi");
+  int frame=framesOfVideo("/home/emmanuelh/Videos/3e_prise_g.avi");
+  cout << frame << endl;
+  //framesOfVideo("Test_xvid_001.avi");
 	//videoClipper("Test_xvid_001.avi");
 	
 	GraphoScan grapho_left, grapho_right;
@@ -43,45 +46,47 @@ int main()
 	//grapho_left.mySelectBg("undist_2007_L.avi","pt_bg_undist_2007_L.txt");
 	
 	//lance le tracking 
-	//grapho_left.myTrackerKCF("1207_undist_POLYTECH_L.avi");
+	grapho_left.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_g.avi");
 
-	//grapho_left.calcImgPtsAndImgTrack();
+	grapho_left.calcImgPtsAndImgTrack();
 
 	//enregistre dans les .jpg le HOG puis la trajectoire noir/blanc
-	//grapho_left.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_L_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_L_1.jpg");
+	grapho_left.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_L_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_L_1.jpg");
 
 	//enregistre les points du tracking dans un fichier
-	//grapho_left.saveTrajectoire("1207_undist_POLYTECH_L_1.txt");
+	grapho_left.saveTrajectoire("left_add.txt");
 	
 	//enregistre les données du fichier dans ptsObjet
 	//grapho_left.readTracjectoire("1207_undist_POLYTECH_L_1.txt");
 	
 	//a tester
-	//grapho_left.insertPoints(3);
-	
-	//grapho_left.saveTrajectoire("1207_undist_POLYTECH_L_add_1.txt"); 
+    cout << "LA" << endl;
+	grapho_left.insertPoints(3);
+    cout << "LA" << endl;
+    
+	grapho_left.saveTrajectoire("1207_undist_POLYTECH_L_add_1.txt"); 
 
 	
 	
 	
 	//grapho_right.mySelectBg("undist_2007_R.avi", "pt_bg_undist_2007_R.txt");
-	//grapho_right.myTrackerKCF("1207_undist_POLYTECH_R.avi");
+	grapho_right.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_d.avi");
 
-	//grapho_right.calcImgPtsAndImgTrack();
+	grapho_right.calcImgPtsAndImgTrack();
 
-	//grapho_right.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_R_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_R_1.jpg");
+	grapho_right.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_R_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_R_1.jpg");
 
 	//grapho_right.saveTrajectoire("1207_undist_POLYTECH_R_1.txt");
 	//grapho_right.readTracjectoire("1207_undist_POLYTECH_R_1.txt");
 	//grapho_right.insertPoints(3);
-	//grapho_right.saveTrajectoire("1207_undist_POLYTECH_R_add_1.txt");
+	grapho_right.saveTrajectoire("right_add.txt");
 
 
 	//calculer des points en 3D
-	//VideoCapture cap("left.avi");
-	//cv::Mat imgSrc;
-	//cap.read(imgSrc);
-	//GraphoScan::calAndSavePointsOf3D(imgSrc.size(), "left_add.txt", "right_add.txt", "pt2_add.txt");
+	VideoCapture cap("/home/emmanuelh/Videos/3e_prise_g.avi");
+	cv::Mat imgSrc;
+	cap.read(imgSrc);
+	GraphoScan::calAndSavePointsOf3D(imgSrc.size(), "left_add.txt", "right_add.txt", "pt2_add.txt");
 
 	//grapho_left.ptsObjet = pts;
 
@@ -102,7 +107,7 @@ int main()
 	myOpenGL myApp;
 	myApp.InitWindow();
 	myApp.InitVertex();
-	myApp.RunGL("pt2_add.txt", "pt_background_add.txt");
+	myApp.RunGL("pt2_add.txt");
 
 #endif // OPENGL
 
