@@ -4,66 +4,81 @@ Pour pouvoir lancer et utiliser cette application, différentes bibliothèques d
 
 \subsubsection{FlyCap}
 
-FlyCap est le framework de PointGrey, le fabricant des deux caméras, permettant de communiquer dans un programme avec les caméras. L'installation est relativement aisée, il suffit d'aller sur le site du constructeur (https://www.ptgrey.com/support/downloads) pour télécharger le framework. Il faut alors renseigner le type de caméra (Chameleon3), le modèle (CM3-U3-13S2C-CS) puis le système d'exploitation utilisé. Il faut ensuite sélectionner "Latest FlyCapture2 Full SDK" dans la partie software. Une fois le téléchargement terminé, un README détaille toutes les étapes nécessaires à l'installation, il suffit de les suivre une à une pour avoir FlyCap en état de marche. Pour vérifier si le logiciel s'est bien installé, il est possible de le lancer dans un terminal via la commande \textit{flycap} pour voir la vue d'une des caméras.
+FlyCap est le framework de PointGrey, le fabricant des deux caméras, permettant de communiquer dans un programme avec les caméras. L'installation est relativement aisée, il suffit d'aller sur le site du constructeur (\url{https://www.ptgrey.com/support/downloads}) pour télécharger le framework. Il faut alors renseigner le type de caméra (Chameleon3), le modèle (CM3-U3-13S2C-CS) puis le système d'exploitation utilisé. Il faut ensuite sélectionner "Latest FlyCapture2 Full SDK" dans la partie software. Une fois le téléchargement terminé, un README détaille toutes les étapes nécessaires à l'installation, il suffit de les suivre une à une pour avoir FlyCap en état de marche. Pour vérifier si le logiciel s'est bien installé, il est possible de le lancer dans un terminal via la commande \textit{flycap} pour voir la vue d'une des caméras.
 
 \subsubsection{OpenCV}
 
-OpenCV doit être installé également, afin de profiter de son traitement d'image et de ses algorithmes de tracking. Il a été décidé d'utiliser OpenCV 3, car celui-ci contient un module optionnel OpenCV_contrib. Ce dernier contient tous les algorithmes de tracking, c'est un extra-module indispensable pour pouvoir exécuter le projet.
+OpenCV doit être installé également, afin de profiter de son traitement d'image et de ses algorithmes de tracking. Il a été décidé d'utiliser OpenCV 3, car celui-ci contient un module optionnel OpenCV\textunderscore contrib. Ce dernier contient tous les algorithmes de tracking, c'est un extra-module indispensable pour pouvoir exécuter le projet.
 
 Pour installer OpenCV, voici la marche à suivre :
 
-- On se place dans le dossier de travail et on télécharge les dernières versions OpenCV  et d'OpenCV_contrib.
+- On se place dans le dossier de travail et on télécharge les dernières versions OpenCV  et d'OpenCV\textunderscore contrib.
 
+\begin{verbatim}
 cd ~/<my_working_directory>
 git clone https://github.com/opencv/opencv.git
 git clone https://github.com/opencv/opencv_contrib.git
+\end{verbatim}
 
 - On se place dans le dossier OpenCV téléchargé et on crée un répertoire temporaire pour le build.
 
+\begin{verbatim}
 cd ~/opencv
 mkdir build
 cd build
+\end{verbatim}
 
 - On lance la configuration en n'oubliant pas d'inclure l'extra-module. Cette étape peut prendre un certain temps, jusqu'à 1h30 suivant les machines.
 
+\begin{verbatim}
 cmake -D CMAKE_BUILD_TYPE=Release -DOPENCV_EXTRA_MODULES_PATH=*PATH_TO_FOLDER*/opencv_contrib/modules -D CMAKE_INSTALL_PREFIX=/usr/local ..
+\end{verbatim}
 
 - On démarre l'installation. Si on ne possède que quatre coeur, mieux vaut marquer -j4.
 
+\begin{verbatim}
 make -j7
+\end{verbatim}
 
 - Dans certains cas, il faut rajouter la ligne suivante dans le .bashrc pour indiquer où se trouvent les librairies OpenCV.
 
+\begin{verbatim}
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/lib
-
+\end{verbatim}
 
 
 \subsubsection{OpenGL, glew, GLFW et glm}
 
 - Il faut commencer par installer OpenGL et Mesa :
 
+\begin{verbatim}
 sudo apt-get install cmake xorg-dev libglu1-mesa-dev
+\end{verbatim}
 
 - Pour savoir si l'opération s'est bien passée, il faut regarder que les deux fichiers suivants sont bien présents :
 
+\begin{verbatim}
 /usr/include/GL
 /usr/lib/x86_64-linux-gnu/libGL.so
+\end{verbatim}
 
-- A présent, il faut retourner dans le dossier de travail pour installer GLFW. Commencer par télécharger le code source (https://sourceforge.net/projects/glfw/files/glfw/3.0.4/glfw-3.0.4.zip/download), puis exécuter les instructions suivantes :
+- A présent, il faut retourner dans le dossier de travail pour installer GLFW. Commencer par télécharger le code source (\url{https://sourceforge.net/projects/glfw/files/glfw/3.0.4/glfw-3.0.4.zip/download}), puis exécuter les instructions suivantes :
 
+\begin{verbatim}
 cd glfw-3.0.4
 rehash
 cmake -G "Unix Makefiles"
 make
 sudo make install
+\end{verbatim}
 
 - Les fichiers suivants doivent maintenant être présents :
 
+\begin{verbatim}
 /usr/local/include/GLFW
 /usr/local/lib/libglfw3.a
+\end{verbatim}
 
 \subsection{Utilisation}
 
 Le travail est séparé en deux parties.
-
-g++ -std=c++11 -lglfw -O2 -Wall -o test main.cpp `pkg-config --cflags --libs opencv` 
