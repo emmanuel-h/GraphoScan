@@ -13,24 +13,26 @@
 //#include <glm\gtc\matrix_transform.hpp>
 //#include <glm\gtc\type_ptr.hpp>
 
-Camera::Camera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch) :
+  GLfloat Zoom;
+
+
+/*Camera::Camera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch) :
   mFront(glm::vec3(0.0f, 0.0f, -1.0f)),MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM){
-  
-  mPosition = position;
+   mPosition = position;
   mWorldUp = up;
   mYaw = yaw;
   mPitch = pitch;
-  updateCameraVectors();
-}
+  updateCameraVectors(); 
+}*/
 
 //Constructor with salar values
-Camera::Camera(GLfloat xpos, GLfloat ypos, GLfloat zpos, GLfloat xup, GLfloat yup, GLfloat zup, GLfloat yaw, GLfloat pitch) : mFront(glm::vec3(0.0f, 0.0f, -1.0f)),MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM){
+/*Camera::Camera(GLfloat xpos, GLfloat ypos, GLfloat zpos, GLfloat xup, GLfloat yup, GLfloat zup, GLfloat yaw, GLfloat pitch) : mFront(glm::vec3(0.0f, 0.0f, -1.0f)),MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM){
   mPosition = glm::vec3(xpos, ypos, zpos);
   mWorldUp = glm::vec3(xup, yup, zup);
   mYaw = yaw;
   mPitch = pitch;
   updateCameraVectors();
-}
+}*/
 
 //Returns the view matrix calculated using Eular Angles and the LookAt Matrix
 glm::mat4 Camera::GetViewMatrix(){

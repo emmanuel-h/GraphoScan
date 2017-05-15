@@ -21,9 +21,9 @@ glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
 
 bool keys[1024];
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+/*void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);*/
 void do_movement();
 
 GLfloat vertices[] = {
@@ -127,22 +127,28 @@ class myOpenGL
 public:
   GLuint winWidth;
   GLuint winHeight;
-  GLFWwindow* window;
-  GLuint VAO1, VAO2;
+  // GLFWwindow* window;
+  /* GLuint VAO1, VAO2;
   GLuint VBO1, VBO2;
   GLuint EBO1;
   glm::mat4 myModel;
   glm::mat4 myView;
-  glm::mat4 myProjection;
+  glm::mat4 myProjection;*/
+
   
   //Texture2D texture1;
   //Texture2D texture2;
+
   myOpenGL(const GLuint width = WIDTH, const GLuint height = HEIGHT);
   
   ~myOpenGL();
-  
-  void InitWindow();
 
+
+  void InitWindow(int argc, char ** argv);
+  //void InitWindow();
+
+  //  static void Display(void);
+  
   void InitVertex();
   
   void RunGL(const char* filename/*, const char* filename_bg*/);

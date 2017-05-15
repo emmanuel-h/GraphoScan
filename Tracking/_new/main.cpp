@@ -2,16 +2,30 @@
 //#include "Texture2D.h"
 //#include "Camera.h"
 //#include "OpenGL.cpp"
-
 #include <GL/glew.h>
+//#include <GLFW/glfw3.h>
+
+//#include <GL/gl.h>
+#include <GL/glut.h>
+#include <GL/freeglut.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <GLFW/glfw3.h>
+
+
+#include <opencv2/core/utility.hpp>
+#include <opencv2/tracking.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
+
 
 #include "GraphoScan.cpp"
+#include "Camera.cpp"
+#include "Shader.cpp"
 #include "OpenGL.cpp"
+
 
 #define OPENCV
 //#define OPENGL
@@ -26,7 +40,7 @@ void mouseSelectPoint_Callback(int event, int x, int y, int flags, void* userDat
 
 void videoClipper(const char* videoName);
 
-int main()
+int main(int argc, char ** argv)
 {
 
 #ifdef STEREOVISION
@@ -112,7 +126,7 @@ int main()
 
 #ifdef OPENGL
 	myOpenGL myApp;
-	myApp.InitWindow();
+	myApp.InitWindow(argc,arhv);
 	myApp.InitVertex();
 	myApp.RunGL("pt2_add.txt");
 
