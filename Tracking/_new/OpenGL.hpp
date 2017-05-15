@@ -1,21 +1,3 @@
-#pragma once
-
-#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-//#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
-#include <opencv2/core/utility.hpp>
-#include <opencv2/tracking.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/opencv.hpp>
-
-#include "Camera.hpp"
-#include "Shader.hpp"
-#include "GraphoScan.hpp"
-
 
 const GLuint WIDTH = 800, HEIGHT = 600;
 float mixValue = 0.5f;

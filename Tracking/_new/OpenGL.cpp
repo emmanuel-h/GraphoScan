@@ -1,11 +1,9 @@
-#include "OpenGL.hpp"
-
+//#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 #include <opencv2/core/utility.hpp>
 #include <opencv2/tracking.hpp>
@@ -15,7 +13,10 @@
 
 #include "Camera.hpp"
 #include "Shader.hpp"
-#include "GraphoScan.cpp"
+//#include "GraphoScan.cpp"
+
+
+#include "OpenGL.hpp"
 
 myOpenGL::myOpenGL(const GLuint width, const GLuint height)
 {

@@ -1,9 +1,9 @@
-#include "GraphoScan.hpp"
-
 #include <iostream>
 #include <fstream>
 
 #include "HOG.cpp"
+
+#include "GraphoScan.hpp"
 
 using namespace cv;
 using namespace std;
