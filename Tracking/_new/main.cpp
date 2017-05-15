@@ -28,7 +28,7 @@
 
 
 #define OPENCV
-//#define OPENGL
+#define OPENGL
 //#define STEREOVISION
 
 
@@ -125,11 +125,11 @@ int main(int argc, char ** argv)
 #endif // OPENCV
 
 #ifdef OPENGL
-	myOpenGL myApp;
-	myApp.InitWindow(argc,arhv);
+	RunGL("pt2_add.txt");
+    myOpenGL myApp;
+	myApp.InitWindow(argc,argv);
 	myApp.InitVertex();
-	myApp.RunGL("pt2_add.txt");
-
+	
 #endif // OPENGL
 
 	return 0;

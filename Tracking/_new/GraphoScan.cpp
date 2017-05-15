@@ -158,10 +158,11 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
       while (true)
 	{
 	  std::cout << "start from:";
-	  string str;
+	  int str;
 	  cin >> str;
-	  nFrameStart = stoi(str);
-	  if (nFrameStart < 0)
+	  //nFrameStart = strtol(str);
+      nFrameStart=str;
+      if (nFrameStart < 0)
 	    {
 	      cout << "<error> the number of the frame should be positive." << endl;
 	      continue;
@@ -177,9 +178,10 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
       while (true)
 	{
 	  std::cout << "end at: ";
-	  string str;
+	  int str;
 	  cin >> str;
-	  nFrameEnd = stoi(str);
+      // nFrameEnd = stoi(str);
+      nFrameEnd=str;
 	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
 	    {
 	      std::cout << "nFrame = " << nFrame << endl;
@@ -398,10 +400,11 @@ void GraphoScan::myTrackerMatchTemplate(const char * filename, bool isTransPersp
       while (true)
 	{
 	  std::cout << "start from:";
-	  string str;
+	  int str;
 	  cin >> str;
-	  nFrameStart = stoi(str);
-	  if (nFrameStart < 0)
+	  //nFrameStart = stoi(str);
+      nFrameStart = str;
+      if (nFrameStart < 0)
 	    {
 	      cout << "<error> the number of the frame should be positive." << endl;
 	      continue;
@@ -416,10 +419,11 @@ void GraphoScan::myTrackerMatchTemplate(const char * filename, bool isTransPersp
       while (true)
 	{
 	  std::cout << "end at: ";
-	  string str;
+	  int str;
 	  cin >> str;
-	  nFrameEnd = stoi(str);
-	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
+	  //nFrameEnd = stoi(str);
+      nFrameEnd = str;
+      if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
 	    {
 	      std::cout << "nFrame = " << nFrame << endl;
 	      std::cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
@@ -1257,10 +1261,11 @@ void GraphoScan::selectPointManuel(const char* filename)
       while (true)
 	{
 	  std::cout << "start from:";
-	  string str;
+	  int str;
 	  cin >> str;
-	  nFrameStart = stoi(str);
-	  if (nFrameStart < 0)
+	  //nFrameStart = stoi(str);
+      nFrameStart = str;
+      if (nFrameStart < 0)
 	    {
 	      cout << "<error> the number of the frame should be positive." << endl;
 	      continue;
@@ -1276,10 +1281,11 @@ void GraphoScan::selectPointManuel(const char* filename)
       while (true)
 	{
 	  std::cout << "end at: ";
-	  string str;
+	  int str;
 	  cin >> str;
-	  nFrameEnd = stoi(str);
-	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
+	  //nFrameEnd = stoi(str);
+      nFrameEnd = str;
+      if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
 	    {
 	      std::cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
 	      continue;
