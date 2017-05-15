@@ -1,6 +1,8 @@
-#include </usr/include/opencv2/core/core.hpp>
-#include </usr/include/opencv2/highgui/highgui.hpp>
-#include </usr/include/opencv2/opencv.hpp>
+
+// Pour OpenCV 2
+//#include </usr/include/opencv2/core/core.hpp>
+//#include </usr/include/opencv2/highgui/highgui.hpp>
+//#include </usr/include/opencv2/opencv.hpp>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -9,8 +11,12 @@
 #include <sys/time.h>
 #include <vector>
 #include <omp.h>
+
 // Pour OpenCV 3
-//#include </usr/include/opencv2/imgcodecs.hpp>
+#include <opencv2/core/utility.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "FlyCapture2.h"
 
@@ -275,7 +281,7 @@ int main(int argc, char* argv[]){
     int counter = 0;
     double sec;
 
-    bool display = false;
+    bool display = true;
 
     ofstream benchFile(LATENCE_BENCH, ios::app);
 
@@ -284,12 +290,6 @@ int main(int argc, char* argv[]){
 
     cv::Mat imageArray[numCameras];
     cv::Mat imageROI;
-
-    string s = "Cameras : ";
-
-    //int offset = 0;
-    //int maxHeight = 0;
-    //int totalWidth = 0;
 
     vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
@@ -305,17 +305,7 @@ int main(int argc, char* argv[]){
 			const string format_list = ".yaml";
 			string output_list = date + "/" + date + "_camera_" + int2str(id) + list + format_list;
 			fileStorageArray[id].open(output_list, cv::FileStorage::WRITE);
-			fileStorageArray[id] << "images[";
-			
-			/*
-			#pragma omp master
-			{
-				string output_list = date + "/" + date + "_stereo" + list + format_list;
-				fileStorageStereo.open(output_list, cv::FileStorage::WRITE);
-				fileStorageStereo << "images[";
-			}
-			*/
-			
+			fileStorageArray[id] << "images[";			
 		}
 		
 		if('y' == chV || 'Y' == chV){
@@ -323,22 +313,13 @@ int main(int argc, char* argv[]){
 			outputVideoArray[id].open(name, CV_FOURCC('X','V', 'I', 'D'), NB_FPS, cv::Size(CAMERA_WIDTH, CAMERA_HEIGHT), true);
 			if(!outputVideoArray[id].isOpened()){
 				cout << "Could not open the output video n° " << id << " for write" << endl;
+                noProb = false;
+                #pragma omp cancel parallel
 			}
-			
-			/*
-			#pragma omp master
-			{
-				string nameStereo = date + "/" + date + "_stereo" + ".avi";
-				outputVideoStereo.open(nameStereo, CV_FOURCC('X', 'V', 'I', 'D'), NB_FPS, cv::Size(CAMERA_WIDTH * numCameras, CAMERA_HEIGHT), true);
-				if(!outputVideoStereo.isOpened()){
-					cout << "Could not open the output video stereo for write" << endl;
-				}
-			}
-			*/
 		}
 		
 		// we wait for all threads to synchronize
-		#pragma omp barrier
+		//#pragma omp barrier
 
 
         //========== Start capture ==========
@@ -358,6 +339,7 @@ int main(int argc, char* argv[]){
         }
         
 
+        // Use only if we want to display a window while capturing video
         #pragma omp master
         {
             for(unsigned int i = 0; i < numCameras-1; i++){
@@ -370,18 +352,26 @@ int main(int argc, char* argv[]){
                 time(&start);
             }
         }
+        
+        /*
+        #pragma omp master
+        {
+            if(BENCH){
+                time(&start);
+            }
+            }*/
 
         
         // all threads wait for the master thread
         #pragma omp barrier
 
 
-        while(/* key != 27 */ counter < 500){
+        while(key != 27 /*counter < 500*/){
 
-            #pragma omp single
-            {
+          #pragma omp master
+          {
                 ++counter;
-            }
+          }
 
             errorArray[id] = cameraArray[id].RetrieveBuffer(&rawImageArray[id]);
             if(PGRERROR_OK != errorArray[id].GetType()){
@@ -397,6 +387,7 @@ int main(int argc, char* argv[]){
 
             #pragma omp barrier
 
+            // Use only if we want to display a window while capturing video
             #pragma omp single
             {
                 string s = "Cameras :  ";
@@ -426,65 +417,49 @@ int main(int argc, char* argv[]){
                 
                 //outputVideoStereo.write(imageROI);
             }
+            
 
-            #pragma omp barrier
-
-            #pragma omp master
-            {
-                // Calibration picture
-                if(' ' == key && ('y' == chP || 'Y' == chP)){
-                    for(unsigned int i = 0; i < numCameras; i++){
-                        string name = date + "/" + date + "_camera_" + int2str(i) + "_" + int2str(numCalib) + format;
-                        cout << "Save calibration image n° " << numCalib << endl;
-                        cv::imwrite(name, imageArray[i], compression_params);
-
-                        fileStorageArray[i] << name;
-                        fileStorageStereo << name;
-                    }
-                    numCalib++;
-                }
-
-                // Common picture
-                string time = __TIME__;
-                if(' ' == key && ('n' == chP || 'N' == chP)){
-                    for(unsigned int i = 0; i < numCameras; i++){
-                        string name = date + "/" + date + "_camera_" + int2str(i) + "_pic_" + int2str(numPic) + format;
-                        cout << "Save common image n° " << numPic << endl;
-                        cv::imwrite(name, imageArray[i], compression_params);
-                    }
-                    numPic++;
-                }
+            
+            // Calibration picture
+            string time = __TIME__;
+            if(' ' == key && ('y' == chP || 'Y' == chP)){
+                string name = date + "/" + date + "_camera_" + int2str(id) + "_" + time + format;
+                cout << "Save calibration image n° " <<time << endl;
+                cv::imwrite(name, imageArray[id], compression_params);
+                
+                fileStorageArray[id] << name;
             }
 
-            #pragma omp barrier
+            // Common picture
+            if(' ' == key && ('n' == chP || 'N' == chP)){
+                string name = date + "/" + date + "_camera_" + int2str(id) + "_pic_" + time + format;
+                cout << "Save common image n° " << time << endl;
+                cv::imwrite(name, imageArray[id], compression_params);
+            }
 
             if('y' == chV || 'Y' == chV){
                 outputVideoArray[id].write(imageArray[id]);
             }
 
-			/*
-            #pragma omp single
-            {
-                outputVideoStereo.write(imageROI);
-            }
-            */
-
             #pragma omp single
             {
                 if(display){
-                    key = cv::waitKey(1); // a diminuer pour les tests
+                    // decrease the value for the tests
+                    // increase it for more "user-friendly" experience (the time gap to press ESC is longer)
+                    // /!\ Increasing it too much leads to a heavy drop in FPS
+                    key = cv::waitKey(1);
                 }
                 display = !display;
             }
             
         } // end of while loop
         
-        #pragma omp barrier
+        //#pragma omp barrier
 
-        #pragma omp cancellation point parallel
+        //#pragma omp cancellation point parallel
         
     } // end of parallel region
-
+    
     if(!noProb){
         return -1;
     }
@@ -495,6 +470,7 @@ int main(int argc, char* argv[]){
         time(&end);
     }
 
+    cout << counter << endl;
     sec = difftime(end, start);
     fps = counter / sec;
     cout << fps << endl;
@@ -508,7 +484,6 @@ int main(int argc, char* argv[]){
         for(unsigned int i = 0; i < numCameras; i++){
             fileStorageArray[i] << "]";
         }
-        fileStorageStereo << "]";
     }
 
     for(unsigned int i = 0; i < numCameras; i++){
@@ -540,7 +515,7 @@ int main(int argc, char* argv[]){
     for(unsigned int i = 0; i < numCameras; i++){
         string name = "Calib_camera_" + int2str(i) + "_Matlab.txt";
         ReadInnerParam(name.c_str(), cm[i], dc[i]);
-      }
+    }
     
 #pragma omp parallel num_threads(numCameras)
     {

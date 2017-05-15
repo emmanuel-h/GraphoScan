@@ -808,7 +808,7 @@ void GraphoScan::calcImgPtsAndImgTrack()
 void GraphoScan::saveImgPtsAndImgTraject(const char* filename_imgPtsObjet,const char* filename_imgTrajectoire_cor)
 {
 	//enregistrer l'image des points de la trajectoire
-	cv::imwrite(filename_imgPtsObjet, imgPtsObjet);
+	cv::imwrite(filename_imgPtsObjet, imgTrajectoire);
 
 	//enregistrer la trajectoire
 	cv::imwrite(filename_imgTrajectoire_cor, imgTrajectoire_cor);

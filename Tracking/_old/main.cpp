@@ -1,13 +1,14 @@
 
 //#include "Shader.h"
 //#include "Texture2D.h"
-#include "Camera.h"
-//#include "OpenGL.h"
-//#include "Lib.h"
+//#include "Camera.h"
+//#include "OpenGL.cpp"
+#include "Lib.h"
 #include "GraphoScan.cpp"
 #define OPENCV
-#define OPENGL
+//#define OPENGL
 //#define STEREOVISION
+
 
 vector<Point2f> pts;
 bool isFrameSelected = false;
@@ -34,9 +35,9 @@ int main()
 
 
 #ifdef OPENCV
-  //int frame=framesOfVideo("/home/emmanuelh/Videos/3e_prise_g.avi");
-  //cout << frame << endl;
-	//framesOfVideo("Test_xvid_001.avi");
+  int frame=framesOfVideo("/home/emmanuelh/Videos/3e_prise_g.avi");
+  cout << frame << endl;
+  //framesOfVideo("Test_xvid_001.avi");
 	//videoClipper("Test_xvid_001.avi");
 	
 	GraphoScan grapho_left, grapho_right;
@@ -46,7 +47,7 @@ int main()
 	//lance le tracking 
 	grapho_left.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_g.avi");
 
-	//grapho_left.calcImgPtsAndImgTrack();
+	grapho_left.calcImgPtsAndImgTrack();
 
 	//enregistre dans les .jpg le HOG puis la trajectoire noir/blanc
 	grapho_left.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_L_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_L_1.jpg");
@@ -58,9 +59,11 @@ int main()
 	//grapho_left.readTracjectoire("1207_undist_POLYTECH_L_1.txt");
 	
 	//a tester
-	//grapho_left.insertPoints(3);
-	
-	//grapho_left.saveTrajectoire("1207_undist_POLYTECH_L_add_1.txt"); 
+    cout << "LA" << endl;
+	grapho_left.insertPoints(3);
+    cout << "LA" << endl;
+    
+	grapho_left.saveTrajectoire("1207_undist_POLYTECH_L_add_1.txt"); 
 
 	
 	
@@ -68,9 +71,9 @@ int main()
 	//grapho_right.mySelectBg("undist_2007_R.avi", "pt_bg_undist_2007_R.txt");
 	grapho_right.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_d.avi");
 
-	//grapho_right.calcImgPtsAndImgTrack();
+	grapho_right.calcImgPtsAndImgTrack();
 
-	//grapho_right.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_R_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_R_1.jpg");
+	grapho_right.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_R_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_R_1.jpg");
 
 	//grapho_right.saveTrajectoire("1207_undist_POLYTECH_R_1.txt");
 	//grapho_right.readTracjectoire("1207_undist_POLYTECH_R_1.txt");
@@ -100,10 +103,10 @@ int main()
 #endif // OPENCV
 
 #ifdef OPENGL
-	//myOpenGL myApp;
-	//myApp.InitWindow();
-	//myApp.InitVertex();
-	//myApp.RunGL("pt2_add.txt", "pt_background_add.txt");
+	myOpenGL myApp;
+	myApp.InitWindow();
+	myApp.InitVertex();
+	myApp.RunGL("pt2_add.txt");
 
 #endif // OPENGL
 
