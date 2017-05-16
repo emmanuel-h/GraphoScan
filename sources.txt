@@ -6,3 +6,6 @@ http://blog.csdn.net/sinat_26989191/article/details/51205149
 Le début de l'acquisition : copié collé du code exemple de flycap
 
 
+
+synchro des cameras : https://www.ptgrey.com/tan/11052 + CameraBase.h -> StartSyncCapture()
+
