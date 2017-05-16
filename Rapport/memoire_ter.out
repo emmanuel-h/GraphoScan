@@ -27,10 +27,14 @@
 \BOOKMARK [1][-]{section.9}{Algorithmes et structures de donn\351es}{}% 27
 \BOOKMARK [1][-]{section.10}{Complexit\351}{}% 28
 \BOOKMARK [1][-]{section.11}{Tests de fonctionnement et de validation}{}% 29
-\BOOKMARK [1][-]{section.12}{Extensions possibles}{}% 30
-\BOOKMARK [1][-]{section.13}{Manuel d'utilisation}{}% 31
-\BOOKMARK [2][-]{subsection.13.1}{Installation}{section.13}% 32
-\BOOKMARK [3][-]{subsubsection.13.1.1}{FlyCap}{subsection.13.1}% 33
-\BOOKMARK [3][-]{subsubsection.13.1.2}{OpenCV}{subsection.13.1}% 34
-\BOOKMARK [3][-]{subsubsection.13.1.3}{OpenGL, glew, GLFW et glm}{subsection.13.1}% 35
-\BOOKMARK [2][-]{subsection.13.2}{Utilisation}{section.13}% 36
+\BOOKMARK [2][-]{subsection.11.1}{Latence}{section.11}% 30
+\BOOKMARK [2][-]{subsection.11.2}{FPS}{section.11}% 31
+\BOOKMARK [1][-]{section.12}{Extensions possibles}{}% 32
+\BOOKMARK [1][-]{section.13}{Manuel d'utilisation}{}% 33
+\BOOKMARK [2][-]{subsection.13.1}{Installation}{section.13}% 34
+\BOOKMARK [3][-]{subsubsection.13.1.1}{FlyCap}{subsection.13.1}% 35
+\BOOKMARK [3][-]{subsubsection.13.1.2}{OpenCV}{subsection.13.1}% 36
+\BOOKMARK [3][-]{subsubsection.13.1.3}{OpenGL, glew, glut et glm}{subsection.13.1}% 37
+\BOOKMARK [2][-]{subsection.13.2}{Utilisation}{section.13}% 38
+\BOOKMARK [3][-]{subsubsection.13.2.1}{Acquisition}{subsection.13.2}% 39
+\BOOKMARK [3][-]{subsubsection.13.2.2}{Reconstruction}{subsection.13.2}% 40

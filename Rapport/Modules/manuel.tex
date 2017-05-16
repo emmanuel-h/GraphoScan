@@ -31,7 +31,9 @@ cd build
 - On lance la configuration en n'oubliant pas d'inclure l'extra-module. Cette étape peut prendre un certain temps, jusqu'à 1h30 suivant les machines.
 
 \begin{verbatim}
-cmake -D CMAKE_BUILD_TYPE=Release -DOPENCV_EXTRA_MODULES_PATH=*PATH_TO_FOLDER*/opencv_contrib/modules -D CMAKE_INSTALL_PREFIX=/usr/local ..
+cmake -D CMAKE_BUILD_TYPE=Release
+-DOPENCV_EXTRA_MODULES_PATH=*PATH_TO_FOLDER*/opencv_contrib/modules
+-D CMAKE_INSTALL_PREFIX=/usr/local ..
 \end{verbatim}
 
 - On démarre l'installation. Si on ne possède que quatre coeur, mieux vaut marquer -j4.
@@ -47,7 +49,7 @@ export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/lib
 \end{verbatim}
 
 
-\subsubsection{OpenGL, glew, GLFW et glm}
+\subsubsection{OpenGL, glew, glut et glm}
 
 - Il faut commencer par installer OpenGL et Mesa :
 
@@ -79,6 +81,23 @@ sudo make install
 /usr/local/lib/libglfw3.a
 \end{verbatim}
 
+Pour installer glut :
+Dans synaptic, installer les packages freeglut3, freeglut3-dbg, freeglut3-dev.
+
+Pour installer glew :
+Dans synaptic, installer les packages glew-utils, libglew-dev, libglew1.13, libglewwmx1.13
+
+Pour installer glm :
+Dans synaptic, installer le package libglm-dev.
+
 \subsection{Utilisation}
 
-Le travail est séparé en deux parties.
+Le travail est séparé en deux parties : acquisition et reconstruction, que l'on retrouve dans deux dossiers différents.
+
+\subsubsection{Acquisition}
+
+Un Makefile est fait pour compiler cette partie. Il permet de compiler le code avec les différentes librairies opencv et flycap. Une fois compilé, il suffit de lancer l'exécutable créé pour lancer l'acquisition stéréo.
+
+\subsubsection{Reconstruction}
+
+Cette partie nécessite plus de librairies, à cause de la reconstruction OpenGL. Le mode de fonctionnement est donc légerement différent. Il faut se placer à l'intérieur du répertoire build, et lancer la commande ccmake ../ pour construire dans le dossier parent l'environnement d'exécution. Il faut ensuite faire la commande make pour compiler le programme. Il suffit alors pour lancer l'application de passer en paramètre de l'exécutable les deux vidéos à traiter pour la reconstruction 3D, puis de se laisser guider par les instructions dans le terminal.
