@@ -262,7 +262,7 @@ int main(int argc, char* argv[]){
 	//cin >>chV;
 	chV = 'Y';
 	
-	int numCalib = 0;
+	//int numCalib = 0;
 	int numPic = 0;
 	const string format = ".jpg";
 	
@@ -278,7 +278,7 @@ int main(int argc, char* argv[]){
 
     time_t start, end;
     double fps;
-    int counter = 0;
+    //int counter = 0;
     double sec;
 
     bool display = true;
@@ -295,10 +295,16 @@ int main(int argc, char* argv[]){
     compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
     compression_params.push_back(100);
     
+    
+    timeval timevalArray[numCameras];
+    ofstream latenceFile("latence_omp.bench", ios::app);
+    
 	
 	#pragma omp parallel num_threads(numCameras)
 	{
 		int id = omp_get_thread_num();
+		
+		int numCalib = 0;
 	
 		if('y' == chP || 'Y' == chP){
 			const string list = "_List";
@@ -319,7 +325,7 @@ int main(int argc, char* argv[]){
 		}
 		
 		// we wait for all threads to synchronize
-		//#pragma omp barrier
+		#pragma omp barrier
 
 
         //========== Start capture ==========
@@ -340,6 +346,7 @@ int main(int argc, char* argv[]){
         
 
         // Use only if we want to display a window while capturing video
+        /*
         #pragma omp master
         {
             for(unsigned int i = 0; i < numCameras-1; i++){
@@ -352,33 +359,50 @@ int main(int argc, char* argv[]){
                 time(&start);
             }
         }
+        */
         
-        /*
+        
         #pragma omp master
         {
             if(BENCH){
                 time(&start);
             }
-            }*/
+        }
 
         
         // all threads wait for the master thread
         #pragma omp barrier
+        
+        int counter = 0;
 
 
-        while(key != 27 /*counter < 500*/){
+        while(/*key != 27 */counter < 1000){
 
-          #pragma omp master
-          {
-                ++counter;
-          }
+          //#pragma omp single
+          //{
+                counter++;
+          //}
+          
+          //cout << counter << endl;
+          
+          //#pragma omp barrier
 
             errorArray[id] = cameraArray[id].RetrieveBuffer(&rawImageArray[id]);
+            gettimeofday(&timevalArray[id], 0);
             if(PGRERROR_OK != errorArray[id].GetType()){
                 cout << "Capture error (camera n° " << id << ")" << endl;
                 //return -1;
                 noProb = false;
                 #pragma omp cancel parallel
+            }
+            
+            #pragma omp barrier
+            
+            #pragma omp single
+            {
+            	//cout << "sec : " << timevalArray[0].tv_sec << endl;
+            	//cout << "usec : " << timevalArray[0].tv_usec << endl;
+            	latenceFile << "\"" << counter << "\" " << timevalArray[0].tv_sec - 1494859000 << "." << timevalArray[0].tv_usec << " " << timevalArray[1].tv_sec - 1494859000 << "." << timevalArray[1].tv_usec << endl;
             }
 
             rawImageArray[id].Convert(FlyCapture2::PIXEL_FORMAT_BGR, &rgbImageArray[id]);
@@ -388,6 +412,7 @@ int main(int argc, char* argv[]){
             #pragma omp barrier
 
             // Use only if we want to display a window while capturing video
+            /*
             #pragma omp single
             {
                 string s = "Cameras :  ";
@@ -417,6 +442,7 @@ int main(int argc, char* argv[]){
                 
                 //outputVideoStereo.write(imageROI);
             }
+            */
             
 
             
@@ -432,8 +458,9 @@ int main(int argc, char* argv[]){
 
             // Common picture
             if(' ' == key && ('n' == chP || 'N' == chP)){
-                string name = date + "/" + date + "_camera_" + int2str(id) + "_pic_" + time + format;
-                cout << "Save common image n° " << time << endl;
+                string name = date + "/" + date + "_camera_" + int2str(id) + "_pic_" + int2str(numCalib) + format;
+                cout << "Save common image n° " << numCalib << endl;
+                numCalib++;
                 cv::imwrite(name, imageArray[id], compression_params);
             }
 
@@ -447,7 +474,7 @@ int main(int argc, char* argv[]){
                     // decrease the value for the tests
                     // increase it for more "user-friendly" experience (the time gap to press ESC is longer)
                     // /!\ Increasing it too much leads to a heavy drop in FPS
-                    key = cv::waitKey(1);
+                    //key = cv::waitKey(1);
                 }
                 display = !display;
             }
@@ -470,14 +497,16 @@ int main(int argc, char* argv[]){
         time(&end);
     }
 
-    cout << counter << endl;
+    //cout << counter << endl;
     sec = difftime(end, start);
-    fps = counter / sec;
+    fps = 1000 / sec;
+    //fps = counter / sec;
     cout << fps << endl;
 
-    ofstream fpsFile(RESULT_BENCH, ios::app);
+    ofstream fpsFile("fps.bench", ios::app);
     fpsFile << fps << endl;
     fpsFile.close();
+    latenceFile.close();
 
     // Calibration pic list
     if('y' == chP || 'Y' == chP){
@@ -496,7 +525,7 @@ int main(int argc, char* argv[]){
     
 
 
-
+	/*
     //==================== Undistorsion ====================
     long double cm[numCameras][3][3], dc[numCameras][5];
     cout << endl << "========== Read calibration parameters from file ==========" << endl;
@@ -562,6 +591,7 @@ int main(int argc, char* argv[]){
     if(!noProb){
         return -1;
     }
+    */
 
     return 0;
 
