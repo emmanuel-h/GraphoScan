@@ -1,0 +1,28 @@
+\subsection{Acquisition}
+
+\subsubsection{Acquisition stéréo et enregistrement des vidéos}
+
+On assume le fait qu'il y ait n lignes et m colonnes dans une image. Nous proposons deux complexités, une borne min si on considère qu'un pixel de l'image se traite en temps $O(1)$, et une borne max si l'on considère que le pixel se traite en temps $O(3)$ à cause de ses caractéristiques RGB.
+
+\textbf{Borne min}
+
+Récupération de l'image brute (RetrieveBuffer) : $O(n*m)$
+
+Conversion de l'image brute vers RGB (rawImage.Convert) : $O(n*m)$
+
+Création de la matrice de l'image RGB (imageRGB=cv::Mat) : $O(n*m)$
+
+Ecriture d'une image dans la vidéo (outputVideo.write) : $O(n*m)$
+
+Ce qui nous donne un total de temps d'exécution en $O(4(n*m))$.
+
+\textbf{Borne max}
+
+Il suffit de multiplier par trois les valeurs précédentes, ce qui nous donne au total $O(12(n*m))$
+
+\textbf{Analyse}
+
+Nous pouvons donc en conclure que le temps d'exécution de l'algorithme C est :
+$O(4(n*m)) \leq C \leq O(12(n*m))$
+
+C'est-à-dire qu'il s'exécute globalement en temps linéaire en la taille de l'entrée. Cela dit, il faut l'exécuter à chaque tour de boucle (à chaque acquisition d'image), donc on pourrait dire que sa complexité serait alors de $O(n*m*f)$, f étant le nombre de frames que nous enregistrons. Evidemment, cela vaut pour la version parallèle du code, si on prend en compte la version séquentielle, il faut bien sûr multiplier cette complexité par le nombre de caméras que l'on a.
