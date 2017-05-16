@@ -6,4 +6,7 @@
 *.tgz
 *.tar.gz
 *.gz
-acquisition
+*.avi
+*.jpg
+*.jpeg
+Tracking/_new/build
