@@ -1,3 +1,11 @@
+#pragma once
+
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
+
 
 
 enum Camera_Mouvement
@@ -32,7 +40,7 @@ public:
   
   //Constructor with vectors
   Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),GLfloat yaw = YAW, GLfloat pitch = PITCH) :mFront(glm::vec3(0.0f, 0.0f, -1.0f)),MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM){
-  mPosition = position;
+     mPosition = position;
   mWorldUp = up;
   mYaw = yaw;
   mPitch = pitch;
@@ -41,12 +49,11 @@ public:
   
   //Constructor with salar values
   Camera(GLfloat xpos, GLfloat ypos, GLfloat zpos, GLfloat xup, GLfloat yup, GLfloat zup, GLfloat yaw = YAW, GLfloat pitch = PITCH) :mFront(glm::vec3(0.0f, 0.0f, -1.0f)),MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM){
-    mPosition = glm::vec3(xpos, ypos, zpos);
+mPosition = glm::vec3(xpos, ypos, zpos);
   mWorldUp = glm::vec3(xup, yup, zup);
   mYaw = yaw;
   mPitch = pitch;
   updateCameraVectors();
-
   };
   
   //Returns the view matrix calculated using Eular Angles and the LookAt Matrix

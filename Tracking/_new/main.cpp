@@ -22,12 +22,12 @@
 
 
 #include "GraphoScan.cpp"
-#include "Camera.cpp"
+//#include "Camera.cpp"
 #include "Shader.cpp"
 #include "OpenGL.cpp"
 
 
-#define OPENCV
+//#define OPENCV
 #define OPENGL
 //#define STEREOVISION
 
@@ -43,6 +43,30 @@ void videoClipper(const char* videoName);
 int main(int argc, char ** argv)
 {
 
+  if(argc < 3){
+    cout << "Bad Number of Arguments" << endl;
+    exit(1);
+  }
+
+  char * filename_g = argv[1];
+  char * filename_d = argv[2];
+  VideoCapture cap;
+  cap.open(filename_g);
+  if (!cap.isOpened())
+    {
+      cout << "Cannot open the video left." << endl;
+      exit(1);
+    }
+  cap.open(filename_d);
+  if (!cap.isOpened())
+    {
+      cout << "Cannot open the video right." << endl;
+      exit(1);
+    }
+  
+  
+  
+
 #ifdef STEREOVISION
 	//CameraCalibrator calibrator;
 	//calibrator.setBoardSize(Size(7, 7));
@@ -56,9 +80,12 @@ int main(int argc, char ** argv)
 #endif // STEREOVISION
 
 
-#ifdef OPENCV
-  int frame=framesOfVideo("/home/emmanuelh/Videos/3e_prise_g.avi");
+  //#ifdef OPENCV
+  //int frame=framesOfVideo("/home/emmanuelh/Videos/3e_prise_g.avi");
+  int frame=framesOfVideo(filename_g);
   cout << frame << endl;
+#ifdef OPENCV
+
   //framesOfVideo("Test_xvid_001.avi");
 	//videoClipper("Test_xvid_001.avi");
 	
@@ -67,7 +94,8 @@ int main(int argc, char ** argv)
 	//grapho_left.mySelectBg("undist_2007_L.avi","pt_bg_undist_2007_L.txt");
 	
 	//lance le tracking 
-	grapho_left.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_g.avi");
+	//grapho_left.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_g.avi");
+	grapho_left.myTrackerKCF(filename_g);
 
 	grapho_left.calcImgPtsAndImgTrack();
 
@@ -91,7 +119,8 @@ int main(int argc, char ** argv)
 	
 	
 	//grapho_right.mySelectBg("undist_2007_R.avi", "pt_bg_undist_2007_R.txt");
-	grapho_right.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_d.avi");
+	//grapho_right.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_d.avi");
+	grapho_right.myTrackerKCF(filename_d);
 
 	grapho_right.calcImgPtsAndImgTrack();
 
@@ -104,7 +133,8 @@ int main(int argc, char ** argv)
 
 
 	//calculer des points en 3D
-	VideoCapture cap("/home/emmanuelh/Videos/3e_prise_g.avi");
+	//VideoCapture cap("/home/emmanuelh/Videos/3e_prise_g.avi");
+	cap.open(filename_g);
 	cv::Mat imgSrc;
 	cap.read(imgSrc);
 	GraphoScan::calAndSavePointsOf3D(imgSrc.size(), "left_add.txt", "right_add.txt", "pt2_add.txt");
@@ -125,11 +155,13 @@ int main(int argc, char ** argv)
 #endif // OPENCV
 
 #ifdef OPENGL
-	RunGL("pt2_add.txt");
     myOpenGL myApp;
-	myApp.InitWindow(argc,argv);
+	myApp.InitWindow();
+	cout << "INIT WINDOW FINISHED" << endl;
 	myApp.InitVertex();
-	
+	cout << "INIT VERTEX FINISHED" << endl;
+	myApp.RunGL("pt2_add.txt");
+	cout << "RUNGL FINISHED" << endl;
 #endif // OPENGL
 
 	return 0;

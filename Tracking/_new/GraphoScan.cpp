@@ -158,11 +158,10 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
       while (true)
 	{
 	  std::cout << "start from:";
-	  int str;
+	  string str;
 	  cin >> str;
-	  //nFrameStart = strtol(str);
-      nFrameStart=str;
-      if (nFrameStart < 0)
+	  nFrameStart = stoi(str);
+	  if (nFrameStart < 0)
 	    {
 	      cout << "<error> the number of the frame should be positive." << endl;
 	      continue;
@@ -178,10 +177,9 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
       while (true)
 	{
 	  std::cout << "end at: ";
-	  int str;
+	  string str;
 	  cin >> str;
-      // nFrameEnd = stoi(str);
-      nFrameEnd=str;
+	  nFrameEnd = stoi(str);
 	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
 	    {
 	      std::cout << "nFrame = " << nFrame << endl;
@@ -400,11 +398,10 @@ void GraphoScan::myTrackerMatchTemplate(const char * filename, bool isTransPersp
       while (true)
 	{
 	  std::cout << "start from:";
-	  int str;
+	  string str;
 	  cin >> str;
-	  //nFrameStart = stoi(str);
-      nFrameStart = str;
-      if (nFrameStart < 0)
+	  nFrameStart = stoi(str);
+	  if (nFrameStart < 0)
 	    {
 	      cout << "<error> the number of the frame should be positive." << endl;
 	      continue;
@@ -419,11 +416,10 @@ void GraphoScan::myTrackerMatchTemplate(const char * filename, bool isTransPersp
       while (true)
 	{
 	  std::cout << "end at: ";
-	  int str;
+	  string str;
 	  cin >> str;
-	  //nFrameEnd = stoi(str);
-      nFrameEnd = str;
-      if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
+	  nFrameEnd = stoi(str);
+	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
 	    {
 	      std::cout << "nFrame = " << nFrame << endl;
 	      std::cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
@@ -1155,22 +1151,20 @@ void GraphoScan::calAndSavePointsOf3D(Size sizeImg, const char* filename_left,
 	
   //Donn¨¦es matlab fournies en dur 
   //a modifier
-  cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 2793.47, 0 ,582.306,
-			   0, 1532.3, 298.119,
-			   0, 0, 1);
-  cv::Mat cameraMatrix2 = (cv::Mat_<double>(3, 3) << 1092.55, 0, 637.74,
-			   0, 1346.71, 299.443,
-			   0, 0, 1);
+cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1114.4, 0, 0,
+			   0, 1110.7, 0,
+			   668.7401, 419.1680, 1);
+  cv::Mat cameraMatrix2 = (cv::Mat_<double>(3, 3) << 1108.2, 0, 0,
+			   0, 1107.5, 0,
+			   652.8420, 457.9152, 1);
 
-  cv::Mat distortionMatrix1 = (cv::Mat_<double>(1, 5) <<	8.64952, 31.6793, -0.433353, 0.68756, -2009.77);
+  cv::Mat distortionMatrix1 = (cv::Mat_<double>(1, 5) << 8.64952, 31.6793, -0.433353, 0.68756, -2009.77);
   cv::Mat distortionMatrix2 = (cv::Mat_<double>(1, 5) << 0.100274, 0.72718, 0.0357212, 0.17021, -0.851439);
 
-  cv::Mat rotationMatrix = (cv::Mat_<double>(3, 3) << 0.993817, 0.0364579, 0.104875,
-			    -0.0336424 ,0.999028 ,-0.0284919,
-			    -0.105812, 0.0247875, 0.994077);
-  cv::Mat translationMatrix = (cv::Mat_<double>(3, 1) << -4.92214,
-			       0.102247,
-			       - 1.55309);
+  cv::Mat rotationMatrix = (cv::Mat_<double>(3, 3) << 0.9997, 0.0063, -0.0247,
+			    0.0052, 0.8985, 0.4389,
+			    0.0250, -0.4389, 0.8982);
+  cv::Mat translationMatrix = (cv::Mat_<double>(3, 1) << 32.1360, 222.3364, 19.5136);
 
   cv::Mat R1, R2, P1, P2, Q;
   //stereoRectify (cameraMatrix1,camera1 distortion,cameraMatrix2, camera2 distortion,taille de l'image,matrice de rotation entre les 2 cameras,
@@ -1261,11 +1255,10 @@ void GraphoScan::selectPointManuel(const char* filename)
       while (true)
 	{
 	  std::cout << "start from:";
-	  int str;
+	  string str;
 	  cin >> str;
-	  //nFrameStart = stoi(str);
-      nFrameStart = str;
-      if (nFrameStart < 0)
+	  nFrameStart = stoi(str);
+	  if (nFrameStart < 0)
 	    {
 	      cout << "<error> the number of the frame should be positive." << endl;
 	      continue;
@@ -1281,11 +1274,10 @@ void GraphoScan::selectPointManuel(const char* filename)
       while (true)
 	{
 	  std::cout << "end at: ";
-	  int str;
+	  string str;
 	  cin >> str;
-	  //nFrameEnd = stoi(str);
-      nFrameEnd = str;
-      if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
+	  nFrameEnd = stoi(str);
+	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
 	    {
 	      std::cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
 	      continue;

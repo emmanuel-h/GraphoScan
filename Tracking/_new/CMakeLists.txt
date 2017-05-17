@@ -4,20 +4,24 @@ project (graphoScan)
 
 find_package(OpenGL REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(glfw3 3.2 REQUIRED)
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 add_compile_options(-std=c++11)
 
+set(GL_LIBRARY GL GLU X11)
+
 set(ALL_LIBS
-	${OPENGL_LIBRARY}
-	glut
+	${OPENGL_gl_LIBRARY}
+	${OpenCV_LIBS}
+	glfw
 	GLEW
 	pthread
 )
 
 add_definitions(
 	-DTW_STATIC
-	-DTW_NO_LIB_PRAGMA
+	-DTW_NO_LIBe_PRAGMA
 	-DTW_NO_DIRECT3D
 	-DGLEW_STATIC
 	-D_CRT_SECURE_NO_WARNINGS
@@ -25,10 +29,10 @@ add_definitions(
 
 
 add_executable(graphoScan 
-	main.cpp 
+	main.cpp shaders_utilities.cpp Camera.cpp
 )
 target_link_libraries(graphoScan
-	${ALL_LIBS} ${OpenCV_LIBS}
+	${ALL_LIBS} ${GL_LIBRARY}
 )
 
 
