@@ -1,18 +1,109 @@
-/*#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>*/
-
-#include "Camera.hpp"
-#include "Shader.hpp"
-
 #include "OpenGL.hpp"
 
-glm::mat4 translation;
-glm::mat4 rotation;
-glm::mat4 trans_initial;
+float mixValue = 0.5f;
+bool firstMouse = true;
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+Camera myCamera;
+glm::mat4 view;
+// Yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right (due to how Eular angles work) so we initially rotate a bit to the left.
+GLfloat yaw = -90.0f;
+
+GLfloat pitch = 0.0f;
+GLfloat lastX = WIDTH / 2.0;
+GLfloat lastY = HEIGHT / 2.0;
+GLfloat aspect = 45.0f;
+
+glm::vec3 cameraPos(0.0f, 0, 3.0f);
+glm::vec3 cameraFront(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+
+bool keys[1024];
+
+using namespace std;
+using namespace glm;
+using namespace cv;
+
+GLfloat vertices[] = {
+  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+  0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+  0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+  0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+  -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+  0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+  0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+};
+
+GLfloat OfPlane[] =
+  {
+    //first triangle
+    -1.0f, 1.0f, 0.0f,
+    1.0f, 1.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f,
+
+    //second triangle
+    1.0f, -1.0f, 0.0f,
+    1.0f, 1.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f,
+  };
+
+/************************/
+//several cubes, position
+glm::vec3 cubePositions[] = {
+  glm::vec3(0.0f,  0.0f,  0.0f),
+  glm::vec3(2.0f,  5.0f, -15.0f),
+  glm::vec3(-1.5f, -2.2f, -2.5f),
+  glm::vec3(-3.8f, -2.0f, -12.3f),
+  glm::vec3(2.4f, -0.4f, -3.5f),
+  glm::vec3(-1.7f,  3.0f, -7.5f),
+  glm::vec3(1.3f, -2.0f, -2.5f),
+  glm::vec3(1.5f,  2.0f, -2.5f),
+  glm::vec3(1.5f,  0.2f, -1.5f),
+  glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
+/************************/
+//Texture
+GLfloat texCoords[] = {
+  0.0f, 0.0f,
+  1.0f, 0.0f,
+  0.5f, 1.0f
+};
 
 void myOpenGL::InitWindow(){
   //GLFW is used to deal with the context
@@ -27,7 +118,7 @@ void myOpenGL::InitWindow(){
   window = glfwCreateWindow(1600, 800, "GraphoScan", nullptr, nullptr);
   if (window == nullptr)
     {
-      std::cout << "Failed to create GLFW window" << std::endl;
+      cout << "Failed to create GLFW window" << endl;
       glfwTerminate();
       return;
     }
@@ -50,7 +141,7 @@ void myOpenGL::InitWindow(){
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK)
     {
-      std::cout << "Failed to initialize GLEW" << std::endl;
+      cout << "Failed to initialize GLEW" << endl;
       return;
     }
   //call this function to define the window we look from
@@ -96,10 +187,6 @@ void myOpenGL::InitVertex() {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
   //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0);
   glEnableVertexAttribArray(0);
-
-  translation = glm::mat4(1.0f);
-  rotation = glm::mat4(1.0f);
-trans_initial = glm::translate(glm::mat4(1.0f),glm::vec3(-0.5,-0.5,-0.5));
 
 //capture the cursor and never lose it
   //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -319,9 +406,6 @@ void myOpenGL::RunGL(const char* filename/*, const char* filename_bg*/) {
 	  model = glm::translate(model, v2);
 	  //model = glm::translate(model, glm::vec3((GLfloat)sin(glfwGetTime()), (GLfloat)sin(glfwGetTime()), (GLfloat)sin(glfwGetTime())));		
 	  model = glm::scale(model, glm::vec3(scale, scale, scale));
-
-	  //model = translation * rotation * trans_initial;
-
 
 	  /*GLfloat* ptr = v1[i].ptr<float>(0);
 	  GLfloat scale = 0.01f;

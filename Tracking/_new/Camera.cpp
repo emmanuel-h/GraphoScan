@@ -1,19 +1,5 @@
 #include "Camera.hpp"
 
-//Pour Linux
-//#include <GL/glew.h>
-//#include <GL/gl.h>
-//#include <GL/glut.h>
-//#include <GL/freeglut.h>
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-
-//Inutile avec Linux
-//#include <glm\glm.hpp>
-//#include <glm\gtc\matrix_transform.hpp>
-//#include <glm\gtc\type_ptr.hpp>
-
-
 //Returns the view matrix calculated using Eular Angles and the LookAt Matrix
 glm::mat4 Camera::GetViewMatrix(){
   return myLookAt();
