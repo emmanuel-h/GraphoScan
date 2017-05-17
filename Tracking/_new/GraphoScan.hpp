@@ -122,7 +122,7 @@ public:
   cv::Mat transformPerspective(const cv::Mat& imgSrc);
 
   static void calAndSavePointsOf3D(Size sizeImg, const char* filename_left = "objectPoints_left.txt",
-				   const char* filename_right = "objectPoints_right.txt", const char* filnname_output = "vCoordinates.txt");
+                                   const char* filename_right = "objectPoints_right.txt", const char* filename_output = "vCoordinates.txt",  const char * filename_outputZ="vCoordinatesZ.txt");
 
   void selectPointManuel(const char* filename);
 	

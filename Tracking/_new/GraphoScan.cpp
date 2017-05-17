@@ -1120,7 +1120,8 @@ cv::Mat GraphoScan::nettoyageImage(const cv::Mat& imgDst, vector<Point2f> ptsObj
 }
 
 void GraphoScan::calAndSavePointsOf3D(Size sizeImg, const char* filename_left,
-				      const char* filename_right, const char* filnname_output)
+                                      const char* filename_right, const char* filename_output,
+                                      const char* filename_outputZ)
 {
   /* ========= 1 ========= */
   //	cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1105.44288, 0, 675.41065, 0, 1107.46806, 449.85884, 0, 0, 1);
@@ -1151,19 +1152,19 @@ void GraphoScan::calAndSavePointsOf3D(Size sizeImg, const char* filename_left,
 	
   //Donn¨¦es matlab fournies en dur 
   //a modifier
-cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1114.4, 0, 0,
-			   0, 1110.7, 0,
-			   668.7401, 419.1680, 1);
+  cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1114.4, 0, 0,
+                           0, 1110.7, 0,
+                           668.7401, 419.1680, 1);
   cv::Mat cameraMatrix2 = (cv::Mat_<double>(3, 3) << 1108.2, 0, 0,
-			   0, 1107.5, 0,
-			   652.8420, 457.9152, 1);
+                           0, 1107.5, 0,
+                           652.8420, 457.9152, 1);
 
   cv::Mat distortionMatrix1 = (cv::Mat_<double>(1, 5) << 8.64952, 31.6793, -0.433353, 0.68756, -2009.77);
   cv::Mat distortionMatrix2 = (cv::Mat_<double>(1, 5) << 0.100274, 0.72718, 0.0357212, 0.17021, -0.851439);
 
   cv::Mat rotationMatrix = (cv::Mat_<double>(3, 3) << 0.9997, 0.0063, -0.0247,
-			    0.0052, 0.8985, 0.4389,
-			    0.0250, -0.4389, 0.8982);
+                            0.0052, 0.8985, 0.4389,
+                            0.0250, -0.4389, 0.8982);
   cv::Mat translationMatrix = (cv::Mat_<double>(3, 1) << 32.1360, 222.3364, 19.5136);
 
   cv::Mat R1, R2, P1, P2, Q;
@@ -1171,7 +1172,7 @@ cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1114.4, 0, 0,
   // vecteur de translation entre les 2 cameras, R1: matrice de rotation 1ere cam, R2: matrice de rotation 2eme cam, P1: matrice de projection 1ere cam,
   // P2: matrice de projection 2eme cam,Q: matrice obtenue pour une projection dans un espace 3D)
   cv::stereoRectify(cameraMatrix1, distortionMatrix1, cameraMatrix2, distortionMatrix2, sizeImg, rotationMatrix, translationMatrix,
-		    R1, R2, P1, P2, Q);
+                    R1, R2, P1, P2, Q);
 
   //OpenCV
   GraphoScan grapho_left, grapho_right;
@@ -1212,7 +1213,7 @@ cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1114.4, 0, 0,
   //cv::Mat M;
   //cv::triangulatePoints(P1, P2, ptsLeft, ptsRight, M);
 
-  ofstream f(filnname_output);
+  ofstream f(filename_output);
   if (!f.is_open())
     {
       std::cout << "Cannot open the file" << endl;
@@ -1222,16 +1223,27 @@ cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1114.4, 0, 0,
     {
       f.clear();
       for (int i = 0; i < v.size(); i++)
-	{
-	  //a remplacer par v[i].x/y/z
-	  float* ptr = v[i].ptr<float>(0);
-	  f << ptr[0] << " " << ptr[1] << " " << ptr[2] << " " << ptr[3] << endl;
-	}
-      /*	for (int i = 0; i < M.cols; i++)
-		{
-		f << M.at<float>(0, i) << " " << M.at<float>(1, i) << " " << M.at<float>(2, i) << " " << M.at<float>(3, i) << endl;
-		}
-      */}
+        {
+          float* ptr = v[i].ptr<float>(0);
+          f << ptr[0] << " " << ptr[1] << " " << ptr[2] << " " << ptr[3] << endl;
+        }
+     }
+
+  ofstream fz(filename_outputZ);
+  if(!fz.is_open()){
+    std::cout << "Cannot open the Z file" << endl;
+    exit(1);
+  }else{
+    f.clear();
+    for (int i = 0; i < v.size(); i++)
+      {
+        float* ptr = v[i].ptr<float>(0);
+        float fi= i*1.0f;
+        fz << ptr[0] << " " << ptr[1] << " " << i/2000.0f << " " << ptr[3] << endl;
+      }
+    
+  }
+
 }
 
 void GraphoScan::selectPointManuel(const char* filename)

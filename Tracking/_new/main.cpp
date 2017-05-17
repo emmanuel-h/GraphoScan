@@ -13,7 +13,7 @@
 #include "OpenGL.hpp"
 
 
-//#define OPENCV
+#define OPENCV
 #define OPENGL
 //#define STEREOVISION
 
@@ -88,18 +88,13 @@ int main(int argc, char ** argv)
 	//enregistre dans les .jpg le HOG puis la trajectoire noir/blanc
 	grapho_left.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_L_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_L_1.jpg");
 
-	//enregistre les points du tracking dans un fichier
-	grapho_left.saveTrajectoire("left_add.txt");
-	
 	//enregistre les données du fichier dans ptsObjet
 	//grapho_left.readTracjectoire("1207_undist_POLYTECH_L_1.txt");
 	
 	//a tester
-    cout << "LA" << endl;
 	grapho_left.insertPoints(3);
-    cout << "LA" << endl;
     
-	grapho_left.saveTrajectoire("1207_undist_POLYTECH_L_add_1.txt"); 
+	grapho_left.saveTrajectoire("left_add.txt"); 
 
 	
 	
@@ -114,7 +109,7 @@ int main(int argc, char ** argv)
 
 	//grapho_right.saveTrajectoire("1207_undist_POLYTECH_R_1.txt");
 	//grapho_right.readTracjectoire("1207_undist_POLYTECH_R_1.txt");
-	//grapho_right.insertPoints(3);
+	grapho_right.insertPoints(3);
 	grapho_right.saveTrajectoire("right_add.txt");
 
 
@@ -123,7 +118,7 @@ int main(int argc, char ** argv)
 	cap.open(filename_g);
 	cv::Mat imgSrc;
 	cap.read(imgSrc);
-	GraphoScan::calAndSavePointsOf3D(imgSrc.size(), "left_add.txt", "right_add.txt", "pt2_add.txt");
+	GraphoScan::calAndSavePointsOf3D(imgSrc.size(), "left_add.txt", "right_add.txt", "pt2_add.txt", "pt2_addZ.txt");
 
 	//grapho_left.ptsObjet = pts;
 
@@ -147,6 +142,7 @@ int main(int argc, char ** argv)
 	myApp.InitVertex();
 	cout << "INIT VERTEX FINISHED" << endl;
 	myApp.RunGL("pt2_add.txt");
+    //myApp.RunGL("pt2_addZ.txt");
 	cout << "RUNGL FINISHED" << endl;
 #endif // OPENGL
 
