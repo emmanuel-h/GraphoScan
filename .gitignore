@@ -9,4 +9,6 @@
 *.avi
 *.jpg
 *.jpeg
+*.cpp~
+*.hpp~
 Tracking/_new/build
