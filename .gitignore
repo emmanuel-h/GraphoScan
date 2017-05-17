@@ -12,3 +12,5 @@
 *.cpp~
 *.hpp~
 Tracking/_new/build
+graphoScan
+acquisition
