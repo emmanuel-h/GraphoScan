@@ -13,5 +13,5 @@
 *.hpp~
 *.o
 Tracking/_new/build
-graphoScan
-acquisition
+Tracking/_new/graphoScan
+Acquisition/acquisition
