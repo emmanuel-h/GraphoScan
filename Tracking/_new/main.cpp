@@ -1,7 +1,3 @@
-//#include "Shader.h"
-//#include "Texture2D.h"
-//#include "Camera.h"
-//#include "OpenGL.cpp"
 #include <GL/glew.h>
 //#include <GLFW/glfw3.h>
 
@@ -13,18 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
-#include <opencv2/core/utility.hpp>
-#include <opencv2/tracking.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/opencv.hpp>
-
-
-#include "GraphoScan.cpp"
-//#include "Camera.cpp"
-#include "Shader.cpp"
-#include "OpenGL.cpp"
+#include "GraphoScan.hpp"
+#include "OpenGL.hpp"
 
 
 //#define OPENCV
@@ -155,7 +141,7 @@ int main(int argc, char ** argv)
 #endif // OPENCV
 
 #ifdef OPENGL
-    myOpenGL myApp;
+	myOpenGL myApp;
 	myApp.InitWindow();
 	cout << "INIT WINDOW FINISHED" << endl;
 	myApp.InitVertex();

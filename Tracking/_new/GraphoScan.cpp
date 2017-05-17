@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "HOG.cpp"
+#include "HOG.hpp"
 
 #include "GraphoScan.hpp"
 

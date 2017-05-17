@@ -12,28 +12,40 @@ add_compile_options(-std=c++11)
 set(GL_LIBRARY GL GLU X11)
 
 set(ALL_LIBS
-	${OPENGL_gl_LIBRARY}
-	${OpenCV_LIBS}
-	glfw
-	GLEW
-	pthread
-)
+  ${OPENGL_gl_LIBRARY}
+  ${OpenCV_LIBS}
+  glfw
+  GLEW
+  pthread
+  )
 
 add_definitions(
-	-DTW_STATIC
-	-DTW_NO_LIBe_PRAGMA
-	-DTW_NO_DIRECT3D
-	-DGLEW_STATIC
-	-D_CRT_SECURE_NO_WARNINGS
-)
+  -DTW_STATIC
+  -DTW_NO_LIBe_PRAGMA
+  -DTW_NO_DIRECT3D
+  -DGLEW_STATIC
+  -D_CRT_SECURE_NO_WARNINGS
+  )
 
+#add_executable(opengl.o
+#  Shader.cpp Camera.cpp OpenGL.cpp
+#  )
+
+#add_executable(graphoscan.o
+#  HOG.cpp GraphoScan.cpp
+#  )
+
+#add_executable(graphoScan
+#  opengl.o graphoscan.o main.cpp
+#  )
 
 add_executable(graphoScan 
-	main.cpp Camera.cpp
-)
+  HOG.cpp Shader.cpp Camera.cpp GraphoScan.cpp OpenGL.cpp main.cpp
+  )
+
 target_link_libraries(graphoScan
-	${ALL_LIBS} ${GL_LIBRARY}
-)
+  ${ALL_LIBS} ${GL_LIBRARY}
+  )
 
 
 
