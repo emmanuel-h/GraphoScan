@@ -4,7 +4,7 @@ project (graphoScan)
 
 find_package(OpenGL REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(glfw3 3.2 REQUIRED)
+find_package(glfw3 3.1.2 REQUIRED)
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 add_compile_options(-std=c++11)
@@ -29,7 +29,7 @@ add_definitions(
 
 
 add_executable(graphoScan 
-	main.cpp shaders_utilities.cpp Camera.cpp
+	main.cpp Camera.cpp
 )
 target_link_libraries(graphoScan
 	${ALL_LIBS} ${GL_LIBRARY}
