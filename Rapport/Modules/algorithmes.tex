@@ -8,13 +8,13 @@ Juste avant de commencer la capture, nous posons une barrière à l'aide de
 \begin{verbatim}
 #pragma omp barrier
 \end{verbatim}
-dans le but de déclencher les caméras le plus en même temps possible.
+dans le but de déclencher la capture des caméras de la manière la plus synchronisée possible.
 À l'intérieur de la boucle d'acquisition, une nouvelle barrière est mise avant chaque récupération du buffer de la caméra.
 Dans le cas où l'utilisateur souhaite faire un affichage de la capture qu'il est en train d'effectuer, un des threads est choisi via
 \begin{verbatim}
 #pragma omp single
 \end{verbatim}
-afin de s'occuper du dit affichage.
+afin de s'occuper de cet affichage.
 Enfin, chaque thread écrit la frame dans la vidéo correspondante à la caméra affectée au thread.
 
 \subsection{Export des paramètres de la caméra}
