@@ -1,12 +1,24 @@
 #include <GL/glew.h>
 
-// Shaders
-class Shader
-{
+/*!
+ * \class Shader
+ * \brief Class for Shader Management
+ */
+class Shader {
 public:
-	//Program ID;
-	GLuint Program;
-	//constructeur
-	Shader(const GLchar* vertexSourcePath, const GLchar* fragmentSourcePath);
-	void Use();
+  GLuint programID;
+  
+  /*!
+   * \fn Shader (const GLchar* vertexSourcePath, const GLchar* fragmentSourcePath)
+   * \brief Class constructor
+   * \param vertexSourcePath path to vertex shader
+   * \param vertexSourcePath path to fragment shader
+   */
+  Shader(const GLchar* vertexSourcePath, const GLchar* fragmentSourcePath);
+  
+  /*!
+   * \fn void Use()
+   * \brief Link the Shader with his programID
+   */
+  void Use();
 };

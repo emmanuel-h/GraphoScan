@@ -3,13 +3,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-enum Camera_Mouvement
-  {
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT
-  };
+/**
+ * \enum Camera_Mouvement
+ * \brief possible movement of the Camera
+ *
+ */
+
+enum Camera_Mouvement {
+  FORWARD,     /*!< move forward */
+  BACKWARD,    /*!< move backward */
+  LEFT,        /*!< move on the left */
+  RIGHT        /*!< move on the right */
+};
 
 const GLfloat YAW = -90.0f;
 const GLfloat PITCH = 0.0f;
@@ -17,6 +22,10 @@ const GLfloat SPEED = 3.0f;
 const GLfloat SENSITIVITY = 0.25f;
 const GLfloat ZOOM = 45.0f;
 
+/*!
+ * \class Camera
+ * \brief class for Camera management
+ */
 class Camera {
 public:
   //Camera Attributes
