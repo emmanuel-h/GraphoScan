@@ -1,0 +1,29 @@
+\subsection{Parallélisation OpenMP}
+Pour permettre de faire de l'acquisition vidéo en même temps par plusieurs caméras tout en gardant le nombre de fps maximum, nous avons opté pour une parallélisation en OpenMP. Un thread s'occupe d'une caméra, nous lançons donc la région parallèle de la façon suivante :
+\begin{verbatim}
+#pragma omp parallel num_threads(numCameras)
+\end{verbatim}
+Juste avant la capture, on demande à tous les threads d'attendre, afin que l'on commence en même temps à récupérer les différents flux des caméras :
+\begin{verbatim}
+
+\end{verbatim}
+
+
+\subsection{Export des paramètres de la caméra}
+
+La récupération des paramètres de la caméra, calculés via MatLab, va nous permettre de faire l'undistortion et la reconstruction 3D. Jusqu'à présent, ces paramètres étaient rentrés en dur dans les programmes, nous avons donc décidé de faire des imports/exports de ces données pour plus de simplicité et de réutilisabilité.
+Pour ce faire, une fois les paramètres de calibration calculés dans MatLab , on récupère un objet CameraParameters par caméra. Afin de générer les fichiers de configuration nécessaires, il suffit de rentrer deux commandes par caméra :
+
+\begin{verbatim}
+	dlmwrite( 													  \
+	'*PATH_TO_ACQUISITION*/Calib_camera_*NUM_CAMERA*_Matlab.txt', \
+	camera*NUM_CAMERA*.IntrinsicMatrix,'delimiter', ' ',		  \
+	'precision', 5)
+	dlmwrite(													  \
+	'*PATH_TO_ACQUISITION*/Calib_camera_*NUM_CAMERA*_Matlab.txt', \
+	horzcat(camera*NUM_CAMERA*.RadialDistorsion,				  \
+	camera*NUM_CAMERA*.TangentialDistorsion),					  \
+	'-append', 'delimiter', ' ', 'precision',5)
+\end{verbatim}
+
+Il faut remplacer $*NUM_CAMERA*$ par le nom de l'objet de la caméra correspondante.
