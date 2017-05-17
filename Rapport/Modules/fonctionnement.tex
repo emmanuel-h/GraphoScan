@@ -14,6 +14,7 @@ La seconde technique est celle du HOG (Histogramme de gradient orienté) qui per
 
 L'une ou l'autre de ces techniques peuvent être utilisés pour avoir une suite de coordonnées correspondant au dessin de l'écriture. Une fois que ces deux coordonnées sont récupérées, il existe des fonctions dans OpenCV pour faire des points 3D à partir de points 2D. Il faut pour cela récupérer les paramètres extrinsèques (matrices de rotation et vecteurs de translation, pour passer du repère lié à l'espace de travail au repère lié à la caméra) de la caméra.
 
+Une fois que les coordonnées sont récupérées par l'une ou l'autre méthode, une fonction nous permet de rajouter deux points entre chaque coordonnées pour fluidifier la ligne. Ces coordonnées sont ensuite interprétées par OpenGL pour permettre de les afficher dans un repère en trois dimensions (figures \ref{3D1} et \ref{3D2} ).
 
 
 \begin{figure}[htb]
@@ -36,6 +37,18 @@ L'une ou l'autre de ces techniques peuvent être utilisés pour avoir une suite 
 \includegraphics[width=\textwidth]{Modules/Picture/hog_propre}
 \caption{HOG nettoyé}
 \label{HOGPropre}
+\end{figure}
+
+\newpage
+
+\begin{figure}
+\includegraphics[width=\textwidth]{Modules/Picture/3d_1}
+\caption{Image 3D - 1}
+\label{3D1}
+\vspace{30px}
+\includegraphics[width=\textwidth]{Modules/Picture/3d_2}
+\caption{Image 3D - 2}
+\label{3D2}
 \end{figure}
 
 \clearpage
