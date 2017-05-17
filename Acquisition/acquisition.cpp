@@ -20,139 +20,194 @@
 
 #include "FlyCapture2.h"
 
-#define RESULT_BENCH "result.bench"
-#define LATENCE_BENCH "latence.bench"
-
 #define CAMERA_WIDTH 1288
 #define CAMERA_HEIGHT 964
 #define NB_FPS 30
 
-#define BENCH true
+#define SN0 15508330 // serial number of the left camera
+#define SN1 15508311 // serial number of the right camera
+// add the serial number of other cameras to keep camera 0 as left, camera 1 as right, and camera X as whatever
 
-// not possible to use a #define for Matlab configuration file
-// because of the N cameras instead of just left / right
-#define MATLAB_CONFIG_FILE "CalibLeft_Matlab_1207_03.txt"
+#define BENCH true // set to true if user wants to estimate performances
+#define FPS_BENCH "fps.bench" // file where number of captured fps is written
+#define LATENCE_BENCH "latence.bench" // file where time between two RetrieveBuffer is written
+
+#define WINDOWS false // set to true if user is under Windows OS, false otherwise
 
 
 using namespace FlyCapture2;
 using namespace std;
 
 
-/**
-   Affiche les informations de version de FlyCapture
+/*!
+ * \brief {Serial numbers of different cameras
+ * [0] is the serial number of camera 0, so camera 0 is camera left
+ * [1] is the serial number of camera 1, so camera 1 is camera right
+ * add serial numbers here whenever you connect another camera}
+ */
+static int serialNumber[] = {15508330, 15508311};
+
+/*!
+ * \brief default mode for performance measurement is set to true
+ */
+static bool bench = true;
+
+/*!
+ * \brief default mode for display a window while capturing is set to false
+ */
+static bool display = false;
+
+
+/*!
+ * \fn void PrintBuildInfo()
+ * \brief Display FlyCapture's version informations (Polytech)
  */
 void PrintBuildInfo(){
-  FC2Version fc2Version;
-  Utilities::GetLibraryVersion(&fc2Version);
-  ostringstream version;
-  version << "FlyCapture2 library version : " << fc2Version.major << "."
-	  << fc2Version.minor << "." << fc2Version.type << "." << fc2Version.build;
-  cout << version.str() << endl;
-  ostringstream timeStamp;
-  timeStamp << "Application build date : " << __DATE__ << " " << __TIME__;
-  cout << timeStamp.str() << endl << endl;
+    FC2Version fc2Version;
+    Utilities::GetLibraryVersion(&fc2Version);
+    ostringstream version;
+    version << "FlyCapture2 library version : " << fc2Version.major << "."
+            << fc2Version.minor << "." << fc2Version.type << "." << fc2Version.build;
+    cout << version.str() << endl;
+    ostringstream timeStamp;
+    timeStamp << "Application build date : " << __DATE__ << " " << __TIME__;
+    cout << timeStamp.str() << endl << endl;
 }
 
-/**
-   Affiche les informations de la caméra
+/*!
+ * \fn void PrintCameraInfo (CameraInfo * pCamInfo)
+ * \brief Display camera's informations (Polytech)
+ *
+ * \param pCamInfo Structure containing camera's informations
  */
 void PrintCameraInfo(CameraInfo* pCamInfo){
-  cout << "*** CAMERA INFORMATION ***" << endl;
-  cout << "Serial number - " << pCamInfo->serialNumber << endl;
-  cout << "Camera model - " << pCamInfo->modelName << endl;
-  cout << "Camera vendor - " << pCamInfo->vendorName << endl;
-  cout << "Sensor - " << pCamInfo->sensorInfo << endl;
-  cout << "Resolution - " << pCamInfo->sensorResolution << endl;
-  cout << "Firmware version - " << pCamInfo->firmwareVersion << endl;
-  cout << "Firmware build time - " << pCamInfo->firmwareBuildTime << endl << endl;
+    cout << "*** CAMERA INFORMATION ***" << endl;
+    cout << "Serial number - " << pCamInfo->serialNumber << endl;
+    cout << "Camera model - " << pCamInfo->modelName << endl;
+    cout << "Camera vendor - " << pCamInfo->vendorName << endl;
+    cout << "Sensor - " << pCamInfo->sensorInfo << endl;
+    cout << "Resolution - " << pCamInfo->sensorResolution << endl;
+    cout << "Firmware version - " << pCamInfo->firmwareVersion << endl;
+    cout << "Firmware build time - " << pCamInfo->firmwareBuildTime << endl << endl;
 }
 
-/**
-   Transforme un int en string
+/*!
+ * \fn string int2str (int i)
+ * \brief Converts an int into a string (Polytech)
+ * 
+ * \parem i The int to convert
+ * \return The int converted into a string
  */
 string int2str(int i){
-  ostringstream out;
-  out << i;
-  return out.str();
+    ostringstream out;
+    out << i;
+    return out.str();
 }
 
-/**
-   Remplace les espaces par des underscores dans un string donnée (date ?)
+/*!
+ * \fn string replaceSpace (string str)
+ * \brief Converts spaces with underscores in a given string (mainly used for dates) (Polytech)
+ *
+ * \param str The string to be converted
+ * \return The string where spaces are replaced with underscores
  */
 string replaceSpace(string str){
-  int n = str.length();
+    int n = str.length();
 
-  if (str.empty() || n < 0){
-    cout << "date empty" << endl;
-    return 0;
-  }
-
-  for (int i = 0; i < n; i++){
-    if (str[i] == ' '){
-      str[i] = '_';
+    if (str.empty() || n < 0){
+        cout << "date empty" << endl;
+        return 0;
     }
-  }
-  return str;
+
+    for (int i = 0; i < n; i++){
+        if (str[i] == ' '){
+            str[i] = '_';
+        }
+    }
+    return str;
 }
 
-/**
-   Affiche une erreur
+/*!
+ * \fn void PrintError (Error error)
+ * \brief Display an error (Polytech)
+ *
+ * \param error The error to be displayed
  */
 void PrintError(Error error){
-  error.PrintErrorTrace();
+    error.PrintErrorTrace();
 }
 
-/**
-   Si il y a un clic gauche de la souris dans la fenêtre, affiche les coordonées du pointeur
+/*!
+ * \fn void on_mouse (int event, int x, int y, int flags, void * ustc)
+ * \brief Displays pointer coordinates when a click is made in the window (Polytech)
+ *
+ * \param event
+ * \param x The x coordinate of the pointer
+ * \param y The y coordinate of the pointer
+ * \param flags
+ * \param ustc
  */
 void on_mouse(int event, int x, int y, int flags, void* ustc){
-  if ((event = CV_EVENT_LBUTTONDBLCLK)){
-    cv::Point pt = cv::Point(x, y);
-    if (pt.x <= 1288){
-      cout << "(x,y) = (" << pt.x << ", " << pt.y << ")" << 
-	endl;
+    if ((event = CV_EVENT_LBUTTONDBLCLK)){
+        cv::Point pt = cv::Point(x, y);
+        if (pt.x <= 1288){
+            cout << "(x,y) = (" << pt.x << ", " << pt.y << ")" << 
+                endl;
+        }
+        else
+            cout << "(x,y) = (" << pt.x - 1288 << ", " << pt.y << ")"
+                 << endl;
     }
-    else
-      cout << "(x,y) = (" << pt.x - 1288 << ", " << pt.y << ")"
-	   << endl;
-  }
 }
 
-/**
-   Affiche des paramètres de réglage de la caméra
+/*!
+ * \fn bool ReadInnerParam (const char * filename, long double cm [3][3], long double dc [5])
+ * \brief Read settings parameters of the camera based on a .txt file filled with MatLab 
+ *
+ * \param filename The filename to be read (must respect a certain format, see documentation for more details)
+ * \param cm The IntrinsicMatrix of the camera given by MatLab
+ * \param dc The RadialDisortion and TangentialDistortion of the camera given by MatLab
+ * \return True if the read was successful
  */
 bool ReadInnerParam(const char* filename, long double cm[3][3], long double dc[5]){
-  bool isRead = false;
-  ifstream fin(filename, ios_base::in);
-  if (!fin.is_open()) {
-    cout << "Cannot open the file " << filename << "." << endl;
-    return false;
-  } else {
-    long double tmp;
-    for (int i = 0; i < 3; i++){
-      for (int j = 0; j < 3; j++){
-        //long double* tmp =cameraMatrix.ptr<long double>(i);
-        fin >> tmp;
-        //cout << "tmp : " << tmp << endl;
-        cm[i][j] = tmp;
-      }
+    bool isRead = false;
+    ifstream fin(filename, ios_base::in);
+    if (!fin.is_open()) {
+        cout << "Cannot open the file " << filename << "." << endl;
+        return false;
+    } else {
+        long double tmp;
+        for (int i = 0; i < 3; i++){
+            for (int j = 0; j < 3; j++){
+                //long double* tmp =cameraMatrix.ptr<long double>(i);
+                fin >> tmp;
+                //cout << "tmp : " << tmp << endl;
+                cm[i][j] = tmp;
+            }
+        }
+        for (int i = 0; i < 5; i++){
+            //long double* tmp = distCoeffs.ptr<long double>(0);
+            fin >> tmp;
+            //cout << "tmp 2 : " << tmp << endl;
+            dc[i] = tmp;
+            //distCoeffs.at<long>(i) = tmp;
+        }
+        //cout << "Read cameraMatrix: " << endl << " " << cm << endl;
+        //cout << "Read distortion coeffients: " << endl << " " << dc << endl;
+        isRead = true;
     }
-    for (int i = 0; i < 5; i++){
-      //long double* tmp = distCoeffs.ptr<long double>(0);
-      fin >> tmp;
-      //cout << "tmp 2 : " << tmp << endl;
-      dc[i] = tmp;
-      //distCoeffs.at<long>(i) = tmp;
-    }
-    //cout << "Read cameraMatrix: " << endl << " " << cm << endl;
-    //cout << "Read distortion coeffients: " << endl << " " << dc << endl;
-    isRead = true;
-  }
-  return isRead;
+    return isRead;
 }
 
 
 
+/*
+ *  Used to perform undistortion on recently captured videos
+ *  -numCamera is the number of the camera which we want to undistort capture
+ *  -id is the randomly generated ID affected to the video
+ *  -imageSize is the cv::Size of the capture
+ *  -date is the date of the day, which is contained is the name of the video
+ */
 int undistorsion(int numCamera, string id, cv::Size imageSize, string date){
     
     long double cm[3][3], dc[5];
@@ -191,28 +246,6 @@ int undistorsion(int numCamera, string id, cv::Size imageSize, string date){
 
     cv::Mat srcMat, destMat;
 
-    /*
-    int i = 0;
-    bool stop = false;
-    while(!stop){
-        cv::Mat src, dest;
-        if(!capture.read(src)){
-            cout << "Error while reading " << source << "(i : " << i << ")" << endl;
-            break;
-        }
-
-        cv::remap(src, dest, map1, map2, CV_INTER_LINEAR);
-
-        undist.write(destMat);
-
-        i++;
-        if(frame <= i){
-            stop = true;
-        }
-    }
-    */
-
-    
     for(int i = 0; i < frame; i++){
         if(!capture.read(srcMat)){
             cout << "Error while reading " << source << endl;
@@ -262,7 +295,11 @@ string genRandomId(int len){
 
 
 int main(int argc, char* argv[]){
+    
 	cout << "==================== Welcome to GraphoScan ====================" << endl;
+
+    //=============== Ask parameters ===============
+    cout << "Do you want to enter performance measurement mode ? [y/n]" << endl;
 	
 	cv::Size imageSize(CAMERA_WIDTH, CAMERA_HEIGHT);
 	
@@ -297,7 +334,6 @@ int main(int argc, char* argv[]){
 	CameraInfo camInfoArray[numCameras];
 
     bool noProb = true;
-    //OMP_CANCELLATION=true;
 	
 	
 	//=============== Beginning parallel region ==============
@@ -309,18 +345,52 @@ int main(int argc, char* argv[]){
 		errorArray[id] = busMgr.GetCameraFromIndex(id, &guidArray[id]);
 		if(PGRERROR_OK != errorArray[id].GetType()){
 			PrintError(errorArray[id]);
-			//return -1;
             noProb = false;
-            #pragma omp cancel parallel
 		}
 		
 		//========== Connect the cameras ==========
-		errorArray[id] = cameraArray[id].Connect(&guidArray[id]);
+        //
+        // We match the cameras with their serial number so
+        // camera 0 is the left camera
+        // camera 1 is the right camera
+        //
+        bool cameraMatch = false;
+        Error error1, error2;
+        int i = 0;
+        do{
+            error1 = cameraArray[id].Connect(&guidArray[i]);
+            error2 = cameraArray[id].GetCameraInfo(&camInfoArray[id]);
+            if(PGRERROR_OK != error1.GetType()){
+                cout << "Failed to connect to camera n° " << i << endl;
+                noProb = false;
+                break;
+            }
+            if(PGRERROR_OK != error2.GetType()){
+                cout << "Failed to retrieve informations from camera n° " << i << endl;
+                noProb = false;
+                break;
+            }
+            if(camInfoArray[id]->serialNumber == serialNumber[id]){
+                cameraMatch = true;
+                break;
+            }
+            i++;
+        }while(!cameraMatch && i < (numCameras - 1));
+
+        if(!cameraMatch){
+            cout << "Error : unable to match cameras with their serial number" << endl;
+            cout << "Please check serial number of your cameras, and serial number from serialNumber array" << endl;
+            noProb = false;
+        }else{
+            cout << "Successfully connected to camera n° " << i << endl;
+            cout << "=============== Camera n° " << id << " ==============" << endl;
+			PrintCameraInfo(&camInfoArray[id]);
+        }
+        
+        /*
 		if(PGRERROR_OK != errorArray[id].GetType()){
 			cout << "Failed to connect to camera n° " << id << endl;
-			//return -1;
             noProb = false;
-            #pragma omp cancel parallel
 		}else{
 			cout << "Successfully connected to camera n° " << id << endl;
 		}
@@ -329,15 +399,13 @@ int main(int argc, char* argv[]){
 		errorArray[id] = cameraArray[id].GetCameraInfo(&camInfoArray[id]);
 		if(PGRERROR_OK != errorArray[id].GetType()){
 			cout << "Failed to get informations from camera n° " << id << endl;
-			//return -1;
             noProb = false;
-            #pragma omp cancel parallel
 		}else{
 			cout << "=============== Camera n° " << id << " ==============" << endl;
 			PrintCameraInfo(&camInfoArray[id]);
 		}
+        */
 
-        #pragma omp cancellation point parallel
 	}
 
     if(!noProb){
@@ -348,27 +416,38 @@ int main(int argc, char* argv[]){
 	string dateTemp = __DATE__;
 	string date = replaceSpace(dateTemp);
 	
-	
 	// create folder
 	char* folder = const_cast<char*>(date.c_str());
-	char const *make = "mkdir "; // md pour windows
+    string make;
+    if(WINDOWS){
+        make = "md";
+    }else{
+        make = "mkdir ";
+    }
 	char* foldermake = new char[strlen(folder) + strlen(make) + 1];
 	strcpy(foldermake, make);
 	strcat(foldermake, folder);
 	system(foldermake);
 	
 	cout << "=============== Picture & Videos ==============" << endl;
-	
-	cout << "Do you want to take pictures for calibration (press SPACE to take pictures) ? (y/n)" << endl;
-	char chP;
-	//cin >> chP;
-	chP = 'N';
-	
-	cout << "Do you want to take videos (video begins immediately) ? (y/n)" << endl;
-	char chV;
-	//cin >>chV;
-	chV = 'Y';
-	
+
+    char chP;
+    if(!BENCH){ // in BENCH mode, we do not take calibration pictures
+        cout << "Do you want to take pictures for calibration (press SPACE to take pictures) ? (y/n)" << endl;
+        cin >> chP;
+    }else{
+        chP = 'N';
+    }
+
+    char chV;
+    if(!BENCH){ // in BENCH mode, we save up captured videos
+        cout << "Do you want to take videos (video begins immediately) ? (y/n)" << endl;
+        cin >>chV;
+    }else{
+        chV = 'Y';
+    }
+
+    // format of saved up pictures (calibration and standard pictures)
 	const string format = ".jpg";
 	
 	//create image list
