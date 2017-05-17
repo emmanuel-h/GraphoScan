@@ -1,13 +1,21 @@
 \subsection{Parallélisation OpenMP}
-Pour permettre de faire de l'acquisition vidéo en même temps par plusieurs caméras tout en gardant le nombre de fps maximum, nous avons opté pour une parallélisation en OpenMP. Un thread s'occupe d'une caméra, nous lançons donc la région parallèle de la façon suivante :
+Afin de pouvoir faire de l'acquisition vidéo en simultané sur plusieurs caméras tout en gardant le plus possible d'images par secondes, nous avons opté pour une parallélisation de l'algorithme d'acquisition grâce à OpenMP. Ainsi nous affectons - dans la mesure du possible - une caméra à un thread en lançant la région parallèle de cette sorte :
 \begin{verbatim}
 #pragma omp parallel num_threads(numCameras)
 \end{verbatim}
-Juste avant la capture, on demande à tous les threads d'attendre, afin que l'on commence en même temps à récupérer les différents flux des caméras :
+Avec \texttt{numCameras} le nombre de caméras détectées. \\
+Juste avant de commencer la capture, nous posons une barrière à l'aide de 
 \begin{verbatim}
-
+#pragma omp barrier
 \end{verbatim}
-
+dans le but de déclencher les caméras le plus en même temps possible.
+À l'intérieur de la boucle d'acquisition, une nouvelle barrière est mise avant chaque récupération du buffer de la caméra.
+Dans le cas où l'utilisateur souhaite faire un affichage de la capture qu'il est en train d'effectuer, un des threads est choisi via
+\begin{verbatim}
+#pragma omp single
+\end{verbatim}
+afin de s'occuper du dit affichage.
+Enfin, chaque thread écrit la frame dans la vidéo correspondante à la caméra affectée au thread.
 
 \subsection{Export des paramètres de la caméra}
 
