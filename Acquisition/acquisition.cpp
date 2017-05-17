@@ -133,12 +133,14 @@ bool ReadInnerParam(const char* filename, long double cm[3][3], long double dc[5
       for (int j = 0; j < 3; j++){
         //long double* tmp =cameraMatrix.ptr<long double>(i);
         fin >> tmp;
+        //cout << "tmp : " << tmp << endl;
         cm[i][j] = tmp;
       }
     }
     for (int i = 0; i < 5; i++){
       //long double* tmp = distCoeffs.ptr<long double>(0);
       fin >> tmp;
+      //cout << "tmp 2 : " << tmp << endl;
       dc[i] = tmp;
       //distCoeffs.at<long>(i) = tmp;
     }
@@ -147,6 +149,111 @@ bool ReadInnerParam(const char* filename, long double cm[3][3], long double dc[5
     isRead = true;
   }
   return isRead;
+}
+
+
+
+int undistorsion(int numCamera, string id, cv::Size imageSize, string date){
+    
+    long double cm[3][3], dc[5];
+    cout << endl << "========== Read calibration parameters from file ==========" << endl;
+
+    string name = "Calib_camera_" + int2str(numCamera) + "_Matlab.txt";
+    //string name = "camera" + int2str(numCamera) + ".txt";
+    ReadInnerParam(name.c_str(), cm, dc);
+
+    cv::Mat cameraMatrix = cv::Mat(3, 3, CV_64FC1, cm);
+    cv::Mat distCoeffs = cv::Mat(1, 5, CV_64FC1, dc);
+
+    cv::Mat map1, map2;
+
+    //cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(), cv::Mat(), imageSize, CV_32FC1, map1, map2);
+
+    string source = date + "/" + date + "_camera_" + int2str(numCamera) + "_" + id + ".avi";
+    cv::VideoCapture capture;
+    capture.open(source);
+    if(!capture.isOpened()){
+        cout << "Could not open " << source << endl;
+        return -1;
+    }
+
+    int frame = capture.get(CV_CAP_PROP_FRAME_COUNT);
+
+    cv::VideoWriter undist;
+
+    string nameUndist = date + "/" + date + "_camera_" + int2str(numCamera) + "_" + id + "_undist.avi";
+
+    undist.open(nameUndist, CV_FOURCC('X', 'V', 'I', 'D'), NB_FPS, imageSize, true);
+    if(!undist.isOpened()){
+        cout << "Could not open the output video to write " << nameUndist << endl;
+        return -1;
+    }
+
+    cv::Mat srcMat, destMat;
+
+    /*
+    int i = 0;
+    bool stop = false;
+    while(!stop){
+        cv::Mat src, dest;
+        if(!capture.read(src)){
+            cout << "Error while reading " << source << "(i : " << i << ")" << endl;
+            break;
+        }
+
+        cv::remap(src, dest, map1, map2, CV_INTER_LINEAR);
+
+        undist.write(destMat);
+
+        i++;
+        if(frame <= i){
+            stop = true;
+        }
+    }
+    */
+
+    
+    for(int i = 0; i < frame; i++){
+        if(!capture.read(srcMat)){
+            cout << "Error while reading " << source << endl;
+            break;
+        }
+
+        cv::undistort(srcMat, destMat, cameraMatrix, distCoeffs);
+        //cv::remap(srcMat, destMat, map1, map2, CV_INTER_LINEAR);
+
+        undist.write(destMat);
+    }
+    
+
+    capture.release();
+    undist.release();
+
+    cout << "Wrote undist video into " << nameUndist << endl;
+
+    return 0;
+}
+
+
+/*  
+ *  Used to affect a random ID to a video.
+ *  This way, we can keep more than one video from the same day since the ID
+ *   is likely to be unique for a single day.
+ *  Increase 'len' to have more chance of having a very unique ID, or
+ *   add more characters like numbers from 0 to 9
+ */
+string genRandomId(int len){
+
+    const char alpha[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    int sizeAlpha = 62;
+
+    string s = "";
+
+    for(int i = 0; i < len; i++){
+        s += alpha[rand() % (sizeAlpha - 1)];
+    }
+
+    return s;
 }
 
 
@@ -262,8 +369,6 @@ int main(int argc, char* argv[]){
 	//cin >>chV;
 	chV = 'Y';
 	
-	//int numCalib = 0;
-	int numPic = 0;
 	const string format = ".jpg";
 	
 	//create image list
@@ -271,7 +376,6 @@ int main(int argc, char* argv[]){
 	cv::FileStorage fileStorageStereo;
 	
 	cv::VideoWriter outputVideoArray[numCameras];
-	//cv::VideoWriter outputVideoStereo;
 
     string windowName = "Cameras : ";
     char key = 0;
@@ -298,6 +402,8 @@ int main(int argc, char* argv[]){
     
     timeval timevalArray[numCameras];
     ofstream latenceFile("latence_omp.bench", ios::app);
+
+    string idArray[numCameras];
     
 	
 	#pragma omp parallel num_threads(numCameras)
@@ -305,6 +411,7 @@ int main(int argc, char* argv[]){
 		int id = omp_get_thread_num();
 		
 		int numCalib = 0;
+        int numPic = 0;
 	
 		if('y' == chP || 'Y' == chP){
 			const string list = "_List";
@@ -315,7 +422,8 @@ int main(int argc, char* argv[]){
 		}
 		
 		if('y' == chV || 'Y' == chV){
-			string name = date + "/" + date + "_camera_" + int2str(id) + ".avi";
+            idArray[id] = genRandomId(4);
+			string name = date + "/" + date + "_camera_" + int2str(id) + "_" + idArray[id] +  ".avi";
 			outputVideoArray[id].open(name, CV_FOURCC('X','V', 'I', 'D'), NB_FPS, cv::Size(CAMERA_WIDTH, CAMERA_HEIGHT), true);
 			if(!outputVideoArray[id].isOpened()){
 				cout << "Could not open the output video n° " << id << " for write" << endl;
@@ -346,7 +454,7 @@ int main(int argc, char* argv[]){
         
 
         // Use only if we want to display a window while capturing video
-        /*
+        
         #pragma omp master
         {
             for(unsigned int i = 0; i < numCameras-1; i++){
@@ -359,15 +467,16 @@ int main(int argc, char* argv[]){
                 time(&start);
             }
         }
-        */
         
         
+        /*
         #pragma omp master
         {
             if(BENCH){
                 time(&start);
             }
         }
+        */
 
         
         // all threads wait for the master thread
@@ -376,16 +485,11 @@ int main(int argc, char* argv[]){
         int counter = 0;
 
 
-        while(/*key != 27 */counter < 1000){
+        while(key != 27 /*counter < 600*/){
 
-          //#pragma omp single
-          //{
-                counter++;
-          //}
+            counter++;
           
-          //cout << counter << endl;
-          
-          //#pragma omp barrier
+            //#pragma omp barrier
 
             errorArray[id] = cameraArray[id].RetrieveBuffer(&rawImageArray[id]);
             gettimeofday(&timevalArray[id], 0);
@@ -397,13 +501,15 @@ int main(int argc, char* argv[]){
             }
             
             #pragma omp barrier
-            
+
+            /*
             #pragma omp single
             {
             	//cout << "sec : " << timevalArray[0].tv_sec << endl;
             	//cout << "usec : " << timevalArray[0].tv_usec << endl;
             	latenceFile << "\"" << counter << "\" " << timevalArray[0].tv_sec - 1494859000 << "." << timevalArray[0].tv_usec << " " << timevalArray[1].tv_sec - 1494859000 << "." << timevalArray[1].tv_usec << endl;
             }
+            */
 
             rawImageArray[id].Convert(FlyCapture2::PIXEL_FORMAT_BGR, &rgbImageArray[id]);
             unsigned int rowBytes = (double)rgbImageArray[id].GetReceivedDataSize() / (double)rgbImageArray[id].GetRows();
@@ -412,7 +518,7 @@ int main(int argc, char* argv[]){
             #pragma omp barrier
 
             // Use only if we want to display a window while capturing video
-            /*
+            
             #pragma omp single
             {
                 string s = "Cameras :  ";
@@ -429,8 +535,6 @@ int main(int argc, char* argv[]){
                 }
 
                 cv::Mat imageROI(maxHeight, totalWidth, CV_8UC3);
-                //cout << "Max height : " << maxHeight << endl;
-                //cout << "Total width : " << totalWidth << endl;
 
                 for(unsigned int i = 0; i < numCameras; i++){
                     cv::Mat matrix(imageROI, cv::Rect(offset, 0, imageArray[i].size().width, imageArray[i].size().height));
@@ -440,17 +544,17 @@ int main(int argc, char* argv[]){
 
                 imshow(windowName, imageROI);
                 
-                //outputVideoStereo.write(imageROI);
             }
-            */
+            
             
 
             
             // Calibration picture
             string time = __TIME__;
             if(' ' == key && ('y' == chP || 'Y' == chP)){
-                string name = date + "/" + date + "_camera_" + int2str(id) + "_" + time + format;
+                string name = date + "/" + date + "_calib_camera_" + int2str(id) + "_" + int2str(numCalib) + format;
                 cout << "Save calibration image n° " <<time << endl;
+                numCalib++;
                 cv::imwrite(name, imageArray[id], compression_params);
                 
                 fileStorageArray[id] << name;
@@ -458,9 +562,9 @@ int main(int argc, char* argv[]){
 
             // Common picture
             if(' ' == key && ('n' == chP || 'N' == chP)){
-                string name = date + "/" + date + "_camera_" + int2str(id) + "_pic_" + int2str(numCalib) + format;
+                string name = date + "/" + date + "_camera_" + int2str(id) + "_pic_" + int2str(numPic) + format;
                 cout << "Save common image n° " << numCalib << endl;
-                numCalib++;
+                numPic++;
                 cv::imwrite(name, imageArray[id], compression_params);
             }
 
@@ -474,18 +578,15 @@ int main(int argc, char* argv[]){
                     // decrease the value for the tests
                     // increase it for more "user-friendly" experience (the time gap to press ESC is longer)
                     // /!\ Increasing it too much leads to a heavy drop in FPS
-                    //key = cv::waitKey(1);
+                    key = cv::waitKey(1);
                 }
                 display = !display;
             }
             
         } // end of while loop
-        
-        //#pragma omp barrier
-
-        //#pragma omp cancellation point parallel
-        
+                
     } // end of parallel region
+
     
     if(!noProb){
         return -1;
@@ -521,118 +622,10 @@ int main(int argc, char* argv[]){
         cameraArray[i].Disconnect();
     }
 
-
-    
-
-
-	/*
-    //==================== Undistorsion ====================
-    long double cm[numCameras][3][3], dc[numCameras][5];
-    cout << endl << "========== Read calibration parameters from file ==========" << endl;
-
-    cv::Mat cameraMatrixArray[numCameras];
-    cv::Mat distCoeffArray[numCameras];
-    cv::Mat map1Array[numCameras];
-    cv::Mat map2Array[numCameras];
-
-    cv::VideoCapture videoCapArray[numCameras];
-    cv::VideoWriter undistVideoArray[numCameras];
-
-    cv::Mat srcMatArray[numCameras];
-    cv::Mat distMatArray[numCameras];
-    
-    for(unsigned int i = 0; i < numCameras; i++){
-        string name = "Calib_camera_" + int2str(i) + "_Matlab.txt";
-        ReadInnerParam(name.c_str(), cm[i], dc[i]);
+    // Apply undistorsion on captured videos (based on the date and the id of the videos)
+    for(int i = 0; i < numCameras; i++){
+        undistorsion(i, idArray[i], imageSize, date);
     }
-    
-#pragma omp parallel num_threads(numCameras)
-    {
-        int id = omp_get_thread_num();
-
-        cameraMatrixArray[id] = cv::Mat(3, 3, CV_64FC1, cm[id]);
-        distCoeffArray[id] = cv::Mat(1, 5, CV_64FC1, dc[id]);
-
-        cout << "=====> cameraMatrix n° " << id << "is : " << endl << cameraMatrixArray[id] << endl;
-        cout << "=====> distCoeff n° " << id << "is : " << endl << distCoeffArray[id] << endl;
-
-        cv::initUndistortRectifyMap(cameraMatrixArray[id], distCoeffArray[id], cv::Mat(), cv::Mat(), imageSize, CV_32F, map1Array[id], map2Array[id]);
-
-        //=============== Load original videos ===============
-        string source = date + "/" + date + "_camera_" + int2str(id) + ".avi";
-        videoCapArray[id].open(source);
-        if(!videoCapArray[id].isOpened()){
-            cout << "Could not open file " << source << endl;
-            //return -1;
-            noProb = false;
-            #pragma omp cancel parallel
-        }
-
-        int nbFrame = videoCapArray[id].get(CV_CAP_PROP_FRAME_COUNT);
-
-        string name = date + "/" + date + "undist_camera_" + int2str(id) + ".avi";
-        undistVideoArray[id].open(name,CV_FOURCC('X', 'V', 'I', 'D'), NB_FPS, cv::Size(CAMERA_WIDTH, CAMERA_HEIGHT), true);
-        if(!undistVideoArray[id].isOpened()){
-            cout << "Could not open the output file video from file " << name << endl;
-        }
-
-        for(int i = 0; i < nbFrame; i++){
-            cv::remap(srcMatArray[id], distMatArray[id], map1Array[id], map2Array[id], CV_INTER_LINEAR);
-            undistVideoArray[id].write(distMatArray[id]);
-        }
-
-        undistVideoArray[id].release();
-        videoCapArray[id].release();
-
-        #pragma omp cancellation point parallel
-        
-    } // end of undistortion parallel region
-
-    if(!noProb){
-        return -1;
-    }
-    */
 
     return 0;
-
-
-
-
-    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
