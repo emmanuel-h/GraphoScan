@@ -480,7 +480,7 @@ int main(int argc, char* argv[]){
 
         
         // all threads wait for the master thread
-        #pragma omp barrier
+        //#pragma omp barrier
         
         int counter = 0;
 
@@ -489,7 +489,7 @@ int main(int argc, char* argv[]){
 
             counter++;
           
-            //#pragma omp barrier
+            #pragma omp barrier
 
             errorArray[id] = cameraArray[id].RetrieveBuffer(&rawImageArray[id]);
             gettimeofday(&timevalArray[id], 0);
@@ -500,7 +500,7 @@ int main(int argc, char* argv[]){
                 #pragma omp cancel parallel
             }
             
-            #pragma omp barrier
+            //#pragma omp barrier
 
             /*
             #pragma omp single
