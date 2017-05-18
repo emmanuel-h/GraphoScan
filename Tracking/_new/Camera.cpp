@@ -1,31 +1,24 @@
 #include "Camera.hpp"
 
-//Returns the view matrix calculated using Eular Angles and the LookAt Matrix
 glm::mat4 Camera::GetViewMatrix(){
   return myLookAt();
-  //return glm::lookAt(mPosition, mPosition + mFront, mUp);
 }
 
-//Returns the projection matrix calculated using Zoom and the Projective Matrix
-glm::mat4 Camera::GetProjectionMatrix(float height, float width)
-{
+glm::mat4 Camera::GetProjectionMatrix(float height, float width) {
   return glm::perspective(glm::radians(Zoom), height / width, 0.1f, 100.0f);
 }
 
-//My own lookat function
-glm::mat4 Camera::myLookAt()
-{
+glm::mat4 Camera::myLookAt() {
   glm::mat4 view;
   glm::mat4 rotation, translation;
   
   glm::vec3 front = mFront;
   glm::vec3 worldUp = mWorldUp;
-  //glm::vec3 right = mRight;
   
-  glm::vec3 r, u, d;											//x,y,z
-  d = glm::normalize(-front);									//zaxis
+  glm::vec3 r, u, d;						//x,y,z
+  d = glm::normalize(-front);					//zaxis
   r = glm::normalize(glm::cross(glm::normalize(worldUp),d));	//xaxis = y X z
-  u = glm::normalize(glm::cross(d, r));						//yaxis = z X x;
+  u = glm::normalize(glm::cross(d, r));			        //yaxis = z X x;
   
   rotation[0][0] = r.x;
   rotation[1][0] = r.y;
@@ -47,9 +40,7 @@ glm::mat4 Camera::myLookAt()
   return view;
 }
 
-//Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-void Camera::ProcessKeyboard(Camera_Mouvement direction, GLfloat deltaTime)
-{
+void Camera::ProcessKeyboard(Camera_Mouvement direction, GLfloat deltaTime) {
   GLfloat velocity = MovementSpeed*deltaTime;
   if (direction == FORWARD)
     mPosition += mFront*velocity;
@@ -62,9 +53,7 @@ void Camera::ProcessKeyboard(Camera_Mouvement direction, GLfloat deltaTime)
   updateCameraVectors();
 }
 
-//Processe input received from a mouse input system. Excepts the offset value in both the x and y direction.
-void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch)
-{
+void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean constrainPitch) {
   xoffset *= MouseSensitivity;
   yoffset *= MouseSensitivity;
   mYaw += xoffset;
@@ -81,9 +70,7 @@ void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset, GLboolean co
   updateCameraVectors();
 }
 
-//Precesse input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-void Camera::ProcessMouseScroll(GLfloat yoffset)
-{
+void Camera::ProcessMouseScroll(GLfloat yoffset) {
   if(Zoom <= 500.0f && Zoom >= -500.0f)
     Zoom -= yoffset;
   if (Zoom > 500.0f)
@@ -92,10 +79,7 @@ void Camera::ProcessMouseScroll(GLfloat yoffset)
     Zoom = -500.0f;
 }
 
-
-//Calculates the front vector from the Camera's (updated) Eular Angles
-void Camera::updateCameraVectors()
-{
+void Camera::updateCameraVectors() {
   glm::vec3 front;
   front.x = cos(glm::radians(mPitch))*cos(glm::radians(mYaw));
   front.y = sin(glm::radians(mPitch));
@@ -104,7 +88,4 @@ void Camera::updateCameraVectors()
   mFront = glm::normalize(front);
   mRight = glm::normalize(glm::cross(mWorldUp, mFront));
   mUp = glm::normalize(glm::cross(mFront, mRight));
-  //when use LookAt()
-  //mRight = glm::normalize(glm::cross(mFront,mWorldUp ));
-  //mUp = glm::normalize(glm::cross(mRight, mFront));
 }
