@@ -64,7 +64,8 @@ sudo apt-get install cmake xorg-dev libglu1-mesa-dev
 /usr/lib/x86_64-linux-gnu/libGL.so
 \end{verbatim}
 
-- A présent, il faut retourner dans le dossier de travail pour installer GLFW. Commencer par télécharger le code source (\url{https://sourceforge.net/projects/glfw/files/glfw/3.0.4/glfw-3.0.4.zip/download} ), puis exécuter les instructions suivantes :
+- A présent, il faut retourner dans le dossier de travail pour installer GLFW. Commencer par télécharger le code source (\url{https://sourceforge.net/
+projects/glfw/files/glfw/3.0.4/glfw-3.0.4.zip/download} ), puis exécuter les instructions suivantes :
 
 \begin{verbatim}
 cd glfw-3.0.4
@@ -97,4 +98,9 @@ Un Makefile est fait pour compiler cette partie. Il permet de compiler le code a
 
 \subsubsection{Reconstruction}
 
-Cette partie nécessite plus de librairies, à cause de la reconstruction OpenGL. Le mode de fonctionnement est donc légerement différent. Il faut se placer à l'intérieur du répertoire build, et lancer la commande ccmake ../ pour construire dans le dossier parent l'environnement d'exécution. Il faut ensuite faire la commande make pour compiler le programme. Il suffit alors pour lancer l'application de passer en paramètre de l'exécutable les deux vidéos à traiter pour la reconstruction 3D, puis de se laisser guider par les instructions dans le terminal.
+Cette partie nécessite plus de bibliothèques, à cause de la reconstruction OpenGL. Le mode de fonctionnement est donc légerement différent. Il faut se placer à l'intérieur du répertoire build, et lancer la commande ccmake ../ pour construire dans le dossier parent l'environnement d'exécution. Il faut ensuite faire la commande make pour compiler le programme. Il suffit alors pour lancer l'application de passer en paramètre de l'exécutable les deux vidéos à traiter pour la reconstruction 3D (dans l'ordre : la vidéo gauche puis droite), puis de se laisser guider par les instructions dans le terminal.
+
+Si on a besoin de faire du tracking, on doit décommenter le $\sharp$define OPENCV qui permettra de lancer le tracking sur les deux vidéos. Après lancement du programme, il y a une fenêtre de choix permettant de parcourir la vidéo frame par frame, afin de savoir à laquelle commencer et finir le tracking. Il faut ensuite quitter cette fenêtre en appuyant sur echap, puis revenir sur le terminal et choisir si on enregistre la vidéo et si on veut sélectionner la partie de la vidéo à traiter. Une fenêtre de sélection de la zone d'interêt apparaît, il faut cliquer avec la souris sur l'objet à suivre, puis agrandir la zone à la souris. Celle zone de sélection peut être modifiée autant de fois que nécessaire, et un appui sur la touche espace permet de lancer le tracking.
+Il se passe ensuite la même chose pour la seconde vidéo. Il faut bien penser à appuyer sur echap dans les fenêtres OpenCV pour passer aux parties suivantes.
+
+A partir de cela, des fichiers de points sont créés, fichiers qui seront nécessaires pour faire la reconstruction 3D avec OpenGL. Tant que les fichiers de points sont présents dans le dossier de l'exécutable, il suffit de décommenter le $\sharp$define OPENGL pour lancer la reconstruction 3D (le $\sharp$define OPENCV n'est alors plus nécessaire). Une fenêtre OpenGL s'ouvre, on peut déplacer l'objet dans le repère en 3D grâce à la souris et aux touches zqsd.

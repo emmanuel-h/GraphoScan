@@ -1,7 +1,7 @@
 
 \begin{figure}[!h]
 \centering
-\includegraphics[width=\textwidth]{Modules/Picture/Utilisation.png}
+\includegraphics[scale=0.08]{Modules/Picture/Utilisation.png}
 \caption{Ecriture et acquisition}
 \label{utilisation}
 \end{figure}
@@ -12,9 +12,9 @@ Une fois les deux vidéos récupérées, on peut lancer la reconstruction. La pr
 
 La seconde technique est celle du HOG (Histogramme de gradient orienté) qui permet de détecter des formes dans une image. Ce qui donne au départ une image comme sur la figure \ref{HOGSale}, et après nettoyage \ref{HOGPropre}.
 
-L'une ou l'autre de ces techniques peuvent être utilisés pour avoir une suite de coordonnées correspondant au dessin de l'écriture. Une fois que ces deux coordonnées sont récupérées, il existe des fonctions dans OpenCV pour faire des points 3D à partir de points 2D. Il faut pour cela récupérer les paramètres extrinsèques (matrices de rotation et vecteurs de translation, pour passer du repère lié à l'espace de travail au repère lié à la caméra) de la caméra.
+L'une ou l'autre de ces techniques peuvent être utilisées pour avoir une suite de coordonnées correspondant au dessin de l'écriture. Une fois que ces deux coordonnées sont récupérées, il existe des fonctions dans OpenCV pour faire des points 3D à partir de points 2D. Il faut pour cela récupérer les paramètres extrinsèques (matrices de rotation et vecteurs de translation, pour passer du repère lié à l'espace de travail au repère lié à la caméra) de la caméra.
 
-Une fois que les coordonnées sont récupérées par l'une ou l'autre méthode, une fonction nous permet de rajouter deux points entre chaque coordonnées pour fluidifier la ligne. Ces coordonnées sont ensuite interprétées par OpenGL pour permettre de les afficher dans un repère en trois dimensions (figures \ref{3D1} et \ref{3D2} ).
+Une fois que les coordonnées sont récupérées par l'une ou l'autre méthode, une fonction nous permet de rajouter deux points entre chaque coordonnée pour fluidifier la ligne. Ces coordonnées sont ensuite interprétées par OpenGL pour permettre de les afficher dans un repère en trois dimensions (figures \ref{3D1} et \ref{3D2} ).
 
 
 \begin{figure}[htb]

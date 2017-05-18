@@ -29,24 +29,24 @@ C'est-à-dire qu'il s'exécute globalement en temps linéaire en la taille de l'
 
 \subsubsection{Tracking}
 
-De nombreux algorithmes de tracking existent, dans ce projet nous utilisons différents algorithmes fournis par OpenCV:
+De nombreux algorithmes de tracking existent, dans ce projet nous en utilisons plusieurs, tous fournis par OpenCV:
 \begin{itemize}
-\item KCF (High-Speed Tracking with Kernilized Correlation Filters) utilise les propriétés des matrices circulantes pour faire son tracking. (cf papier sur KCF)
+\item KCF (High-Speed Tracking with Kernilized Correlation Filters) utilise les propriétés des matrices circulantes pour faire son tracking. (cf \cite{kernelized_correlation_filters})
 \item TLD (Tracking Learning Detection) suit l'objet voulu image par image et grâce à une comparaison avec toutes les apparences observées réajuste le tracker de la cible. 
-\item MIL (Multiple instance learning) crée et enrichie un classifieur pour séparer l'objet suivi et le reste de l'image.
-\item Boosting, comme MIL, utilise des classifieurs pour savoir ou est l'objet et ou est les éléments extérieurs. 
+\item MIL (Multiple instance learning) crée et enrichie un classifieur pour sé\-pa\-rer l'objet suivi et le reste de l'image.
+\item Boosting, comme MIL, utilise des classifieurs pour savoir où est l'objet et où sont les éléments extérieurs. 
 \end{itemize}
 Il y a également d'autres algorithmes mais nous n'avons pas eu le temps de les tester.
-L'étudiant précédent a fait une comparaison entre l'algorithme KCF et TLD, à l'aide  du comparatif des méthodes de tracking existants proposé par Joao F.Henriques et de quelques tests, il en a ressorti que KCF  était plus efficace que TLD. 
-Toutefois nous nous sommes également penché sur ce sujet. Pour savoir si un algorithme de tracking est plus efficace qu'un autre nous avons les avons comparé sur différents critères: 
+L'étudiant précédent a fait une comparaison entre l'algorithme KCF et TLD, à l'aide du comparatif des méthodes de tracking existantes, proposé par Joao F.Henriques et de quelques tests, il en est ressorti que KCF était plus efficace que TLD. 
+Toutefois nous nous sommes également penché sur ce sujet. Pour savoir si un algorithme de tracking est plus efficace qu'un autre nous avons les avons comparés sur différents critères: 
 \begin{itemize}
 \item La perte ou non du tracker sur la cible.
 \item La taille du tracker nécessaire pour avoir un tracking.
-\item Le suivi de certain mouvement
-\item La rapidité d'exécution de l'algorithme
+\item Le suivi de certains mouvements.
+\item La rapidité d'exécution de l'algorithme.
 \end{itemize}
-Après avoir défini ces critères nous avons commencer les tests sur les même vidéos à 30 fps. Ces tests ont donné des résultats complètement différent pour chaque algorithme.
-KCF est l'algorithme le plus stable, le tracker suit parfaitement la cible tant que celle-ci n'effectue pas un mouvement trop rapide. Il est également celui-ci qui le temps d'exécution le plus rapide. Après analyse du code OpenSource  permettant de l'exécuter, nous avons ressorti une complexité d'environ $O(n^{4})$, toutefois cette analyse fut rapide et nous n'avons pas eu le temps de l'approfondir.
-Boosting et MIL, qui utilisent la même technique d'apprentissage et d'enrichissement de classifieurs, donnent les même résultats. Le choix de la région d'interêt (ROI) a un impact significatif sur le tracking. L'utilisation d'un mutli-tracker favorisait leur analyse de l'image et ressortait un tracking efficace et la sélection d'une grande  ROI n'avait pas de réel impact.
-TLD donne des résultats copmlètement différent celon la situation. Lors d'un tracking sur des mouvements simple celui-ci est le moins efficace de tous, il recalcule la ROI à chaque frame ce qui est très coûteux et modifie le résultat final du tracking. Toutefois lors de mouvements rapides, qui ne sont pas gérés par les autres algorithmes, TLD arrive à retrouver  l'objet grâce à sa base de connaissance.
-A partir de tous ces tests nous en avons conclu que le choix de l'algorithme dépend l'objet que l'on veut suivre. Si celui-ci est simple à observer KCF est le plus approprié, mais lorsque celui-ci commence à être plus compliqué à suivre il vaut mieux se tourner vers les autres algorithmes qui utilisent leurs bases de connaissances pour retrouver l'objet.
+Après avoir défini ces critères nous avons commencé les tests sur les mêmes vidéos à 30 fps. Ces tests ont donné des résultats complètement différents pour chaque algorithme.
+KCF est l'algorithme le plus stable, le tracker suit parfaitement la cible tant que celle-ci n'effectue pas un mouvement trop rapide. C'est également celui qui a le temps d'exécution le plus rapide. Après analyse de son code (OpenSource), nous avons ressorti une complexité d'environ $O(n^{4})$, toutefois cette analyse fut rapide et nous n'avons pas eu le temps de l'approfondir.
+Boosting et MIL, qui utilisent la même technique d'apprentissage et d'enrichissement de classifieurs, donnent les mêmes résultats. Le choix de la région d'interêt (ROI) a un impact significatif sur le tracking. L'utilisation d'un multi-tracker favorise l'analyse de l'image et ressort un tracking efficace, de plus la sélection d'une grande ROI n'a pas de réel impact.
+TLD donne des résultats copmlètement différents selon la situation. Lors d'un tracking sur des mouvements simples, celui-ci est le moins efficace de tous. En effet, il recalcule la ROI à chaque frame ce qui est très coûteux et modifie le résultat final du tracking. Toutefois lors de mouvements rapides, qui ne sont pas gérés par les autres algorithmes, TLD arrive à retrouver  l'objet grâce à sa base de connaissance.
+A partir de tous ces tests nous en avons conclu que le choix de l'algorithme dépend de l'objet que l'on veut suivre. Si celui-ci est simple à observer, KCF est le plus approprié, mais lorsqu'il commence à être plus compliqué à suivre, il est préférable de se tourner vers les autres algorithmes qui utilisent leurs bases de connaissances pour retrouver l'objet.
