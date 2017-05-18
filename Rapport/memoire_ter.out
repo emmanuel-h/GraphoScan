@@ -32,22 +32,21 @@
 \BOOKMARK [1][-]{section.10}{Complexit\351}{}% 32
 \BOOKMARK [2][-]{subsection.10.1}{Acquisition}{section.10}% 33
 \BOOKMARK [3][-]{subsubsection.10.1.1}{Acquisition st\351r\351o et enregistrement des vid\351os}{subsection.10.1}% 34
-\BOOKMARK [3][-]{subsubsection.10.1.2}{Undistortion}{subsection.10.1}% 35
-\BOOKMARK [2][-]{subsection.10.2}{Reconstruction}{section.10}% 36
-\BOOKMARK [1][-]{section.11}{Tests de fonctionnement et de validation}{}% 37
-\BOOKMARK [2][-]{subsection.11.1}{Latence}{section.11}% 38
-\BOOKMARK [2][-]{subsection.11.2}{FPS}{section.11}% 39
-\BOOKMARK [1][-]{section.12}{Extensions et am\351liorations possibles}{}% 40
-\BOOKMARK [2][-]{subsection.12.1}{Droits d'auteur}{section.12}% 41
-\BOOKMARK [2][-]{subsection.12.2}{Interface graphique}{section.12}% 42
-\BOOKMARK [2][-]{subsection.12.3}{Bouger la feuille}{section.12}% 43
-\BOOKMARK [1][-]{section.13}{Bilan}{}% 44
-\BOOKMARK [1][-]{section.14}{Manuel d'utilisation}{}% 45
-\BOOKMARK [2][-]{subsection.14.1}{Installation}{section.14}% 46
-\BOOKMARK [3][-]{subsubsection.14.1.1}{FlyCap}{subsection.14.1}% 47
-\BOOKMARK [3][-]{subsubsection.14.1.2}{OpenCV}{subsection.14.1}% 48
-\BOOKMARK [3][-]{subsubsection.14.1.3}{OpenGL, glew, glut et glm}{subsection.14.1}% 49
-\BOOKMARK [2][-]{subsection.14.2}{Utilisation}{section.14}% 50
-\BOOKMARK [3][-]{subsubsection.14.2.1}{Acquisition}{subsection.14.2}% 51
-\BOOKMARK [3][-]{subsubsection.14.2.2}{Reconstruction}{subsection.14.2}% 52
-\BOOKMARK [1][-]{section*.2}{References}{}% 53
+\BOOKMARK [3][-]{subsubsection.10.1.2}{Tracking}{subsection.10.1}% 35
+\BOOKMARK [1][-]{section.11}{Tests de fonctionnement et de validation}{}% 36
+\BOOKMARK [2][-]{subsection.11.1}{Latence}{section.11}% 37
+\BOOKMARK [2][-]{subsection.11.2}{FPS}{section.11}% 38
+\BOOKMARK [1][-]{section.12}{Extensions et am\351liorations possibles}{}% 39
+\BOOKMARK [2][-]{subsection.12.1}{Droits d'auteur}{section.12}% 40
+\BOOKMARK [2][-]{subsection.12.2}{Interface graphique}{section.12}% 41
+\BOOKMARK [2][-]{subsection.12.3}{Bouger la feuille}{section.12}% 42
+\BOOKMARK [1][-]{section.13}{Bilan}{}% 43
+\BOOKMARK [1][-]{section.14}{Manuel d'utilisation}{}% 44
+\BOOKMARK [2][-]{subsection.14.1}{Installation}{section.14}% 45
+\BOOKMARK [3][-]{subsubsection.14.1.1}{FlyCap}{subsection.14.1}% 46
+\BOOKMARK [3][-]{subsubsection.14.1.2}{OpenCV}{subsection.14.1}% 47
+\BOOKMARK [3][-]{subsubsection.14.1.3}{OpenGL, glew, glut et glm}{subsection.14.1}% 48
+\BOOKMARK [2][-]{subsection.14.2}{Utilisation}{section.14}% 49
+\BOOKMARK [3][-]{subsubsection.14.2.1}{Acquisition}{subsection.14.2}% 50
+\BOOKMARK [3][-]{subsubsection.14.2.2}{Reconstruction}{subsection.14.2}% 51
+\BOOKMARK [1][-]{section*.2}{References}{}% 52
