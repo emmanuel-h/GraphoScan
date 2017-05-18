@@ -174,7 +174,7 @@ void MyOpenGL::InitVertex() {
   glEnableVertexAttribArray(0);
 
   //capture the cursor and never lose it
-  //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 }
 

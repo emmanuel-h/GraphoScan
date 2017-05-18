@@ -13,7 +13,7 @@
 #include "OpenGL.hpp"
 
 
-#define OPENCV
+//#define OPENCV
 #define OPENGL
 //#define STEREOVISION
 
@@ -88,6 +88,9 @@ int main(int argc, char ** argv)
 	//enregistre dans les .jpg le HOG puis la trajectoire noir/blanc
 	grapho_left.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_L_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_L_1.jpg");
 
+	
+	grapho_left.showImgTrackAndHog("imgPtsObjet_1207_undist_POLYTECH_L_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_L_1.jpg");
+	
 	//enregistre les données du fichier dans ptsObjet
 	//grapho_left.readTracjectoire("1207_undist_POLYTECH_L_1.txt");
 	
@@ -105,8 +108,11 @@ int main(int argc, char ** argv)
 
 	grapho_right.calcImgPtsAndImgTrack();
 
+	
 	grapho_right.saveImgPtsAndImgTraject("imgPtsObjet_1207_undist_POLYTECH_R_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_R_1.jpg");
 
+	grapho_right.showImgTrackAndHog("imgPtsObjet_1207_undist_POLYTECH_R_1.jpg", "imgTrajectoire_cor_1207_undist_POLYTECH_R_1.jpg");
+	
 	//grapho_right.saveTrajectoire("1207_undist_POLYTECH_R_1.txt");
 	//grapho_right.readTracjectoire("1207_undist_POLYTECH_R_1.txt");
 	grapho_right.insertPoints(3);
@@ -189,9 +195,13 @@ int framesOfVideo(const char* filename)
 	while (true)
 	{
 		cv::imshow(filename, vectImages[count]);
-		if (waitKey(30) == 27)
-			break;
+		if (waitKey(1) == 27)
+		  {
+		    cv::destroyWindow(filename);
+		    break;
+		  }
 	}
+	
 	return frameCount;
 }
 
