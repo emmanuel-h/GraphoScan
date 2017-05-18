@@ -13,6 +13,6 @@ Il y a certainement d'autres endroits du projet qui proviennent d'Internet, tout
 
 Une extension possible serait de réaliser une interface graphique, par exemple en Qt. Cela permettrait un maniement beaucoup plus facile de l'application, et rendrait possible son utilisation par des personnes extérieures. En effet, en ce moment tout s'exécute dans le terminal, ce qui peut être moins intuitif. Avec cette interface graphique, on pourrait par exemple choisir de sélectionner une caméra pour voir ce qu'elle enregistre, définir différentes options comme choisir l'algorithme de tracking à utiliser, les sorties vidéos ou images à effectuer, ...
 
-\subsection{Améliorer le code}
+\subsection{Bouger la feuille}
 
-Nous avons 
+La dernière amélioration à apporter au code serait de pouvoir bouger la feuille. Une technique possible serait de faire du multi-tracking sur deux points. En effet, en dessinant juste deux points noirs sur la feuille et en faisant du tracking dessus, on serait capable de détecter tout mouvement ou rotation de la feuille. Il suffira donc par la suite d'appliquer une translation aux coordonnées de l'écriture par rapport à celle de ces deux points pour pouvoir avoir une image qui colle plus à la réalité.

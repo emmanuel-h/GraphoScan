@@ -5,6 +5,7 @@
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{url}
 
 \begin{document}
 \thispagestyle{empty}
@@ -115,14 +116,20 @@ Les petites barres sur le diagramme de Gantt (Figure \ref{gantt1}) correspondent
 
 \input{Modules/extensions.tex}
 
+\section{Bilan}
+
+\input{Modules/bilan.tex}
+
 \section{Manuel d'utilisation}
 
 \input{Modules/manuel.tex}
 
-\bibliographystyle{plain}
+\newpage
+
+\bibliographystyle{IEEEtran}
 \nocite{*}
-\bibliography{Modules/biblio}
- 
+\bibliography{IEEEabrv,biblio}
+
  
 \end{document}
 

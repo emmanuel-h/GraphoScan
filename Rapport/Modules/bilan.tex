@@ -1,0 +1,13 @@
+Nous avions différents objectifs au départ, concernant les deux parties de notre TER, acquisition et tracking/reconstruction.
+
+Le premier était d'avoir une vidéo à 30 fps. Précedemment, le programme capturait les images à la vitesse de 7 ou 8 images/secondes, et actuellement on crée des vidéos en 30 fps constants, et en plus avec de la parallélisation, ce qui nous laisse à penser que le nombre de caméras peut augmenter sans baisser ce chiffre.
+
+Il fallait ensuite généraliser le code de l'acquisition pour qu'il puisse marcher pour n caméras. Au départ, tout était fait pour deux caméras, avec du code copié-collé en deux fois pour chacune des caméras. Tout cela a été modifié, avec des tableaux de taille n (pour n caméras). Par contre, pour la partie reconstruction 3D, cela marche toujours avec deux caméras. Pour modifier cela, il faudrait changer la méthode de reconstruction 3D de points qui actuellement ne prend les points que de deux caméras. Une autre solution serait de lancer le programme sur toutes les paires de caméras et de faire ensuite la moyenne des points récoltés pour plus de réalisme dans la reconstruction.
+
+Le code devait être compilable et exécutable sous environnement UNIX, les étudiants précédents l'ayant fait marcher uniquement sous Windows. Ce point a été également réalisé, une partie de ce rapport (section Manuel) a même été fait pour permettre aux prochains étudiants qui travailleront sur ce projet d'installer les frameworks et bibliothèques nécessaires à la compilation du code, ainsi que des explications sur l'utilisation de l'application.
+
+Pouvoir bouger la feuille n'a malheureusement pas pu être fait par manque de temps, cependant nous avons réfléchi à une solution pour le faire, qui est détaillée dans la partie Extensions et améliorations possibles.
+
+Il fallait rendre le code plus lisible. Ceci a également été fait, grâce à un gros travail de documentation et de compréhension du code. En effet, la majeure partie n'était pas commentée, avec des noms de variables non explicites, etc. Cela a été amélioré, avec une documentation Doxygen, afin que le code puisse être compris par tous.
+
+Enfin, en naviguant sur la documentation de PointGrey (le fabricant des caméras), nous nous sommes rendu compte qu'il existait déjà un moyen de faire de l'acquisition stéréo, grâce à des fonctions dans l'API fournie, et à un cable reliant les caméras. Peut-être faudrait-il envisager aussi cette solution dans le futur, même si notre travail d'amélioration du code de l'étudiant précédent s'étant occupé de cette partie est désormais finie.
