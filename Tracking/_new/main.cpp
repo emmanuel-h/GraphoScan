@@ -13,7 +13,7 @@
 #include "OpenGL.hpp"
 
 
-#define OPENCV
+//#define OPENCV
 #define OPENGL
 //#define STEREOVISION
 
