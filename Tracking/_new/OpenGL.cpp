@@ -294,7 +294,7 @@ void myOpenGL::RunGL(const char* filename/*, const char* filename_bg*/) {
       //run the shader1 program
       shader1.Use();
 		
-      glUniform1f(glGetUniformLocation(shader1.Program, "mixvalue"), mixValue);
+      glUniform1f(glGetUniformLocation(shader1.programID, "mixvalue"), mixValue);
       //glUniform1f(glGetUniformLocation(shader1, "mixvalue"), mixValue);
 
       
@@ -309,10 +309,10 @@ void myOpenGL::RunGL(const char* filename/*, const char* filename_bg*/) {
       //myProjection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 		
       //send view matrix 
-      glUniformMatrix4fv(glGetUniformLocation(shader1.Program, "view"), 1, GL_FALSE, glm::value_ptr(myView));
+      glUniformMatrix4fv(glGetUniformLocation(shader1.programID, "view"), 1, GL_FALSE, glm::value_ptr(myView));
 		
       //send projection matrix
-      glUniformMatrix4fv(glGetUniformLocation(shader1.Program, "projection"), 1, GL_FALSE, glm::value_ptr(myProjection));
+      glUniformMatrix4fv(glGetUniformLocation(shader1.programID, "projection"), 1, GL_FALSE, glm::value_ptr(myProjection));
       
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -426,7 +426,7 @@ void myOpenGL::RunGL(const char* filename/*, const char* filename_bg*/) {
 	  */
 	  
 	  //send model matrix
-	  glUniformMatrix4fv(glGetUniformLocation(shader1.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	  glUniformMatrix4fv(glGetUniformLocation(shader1.programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 	  //glUniformMatrix4fv(glGetUniformLocation(shader1, "model"), 1, GL_FALSE, glm::value_ptr(model));
 	  
 	  //draw something...
@@ -485,11 +485,11 @@ void myOpenGL::RunGL(const char* filename/*, const char* filename_bg*/) {
       glm::mat4 model;
       model = glm::rotate(model, glm::radians(180.0f), glm::vec3(-1.0f, -1.0f, 0.0f));
 
-      glUniformMatrix4fv(glGetUniformLocation(shader2.Program, "view"), 1, GL_FALSE, glm::value_ptr(myView));
+      glUniformMatrix4fv(glGetUniformLocation(shader2.programID, "view"), 1, GL_FALSE, glm::value_ptr(myView));
       
-      glUniformMatrix4fv(glGetUniformLocation(shader2.Program, "projection"), 1, GL_FALSE, glm::value_ptr(myProjection));
+      glUniformMatrix4fv(glGetUniformLocation(shader2.programID, "projection"), 1, GL_FALSE, glm::value_ptr(myProjection));
        
-       glUniformMatrix4fv(glGetUniformLocation(shader1.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+       glUniformMatrix4fv(glGetUniformLocation(shader1.programID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
