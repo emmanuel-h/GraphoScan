@@ -35,3 +35,21 @@ Pour ce faire, une fois les paramètres de calibration calculés dans MatLab , o
 \end{verbatim}
 
 Il faut remplacer $*NUM_CAMERA*$ par le nom de l'objet de la caméra correspondante.
+
+\subsection{Fonctionnement de la reconstruction 3D}
+
+Pour faire la reconstruction nous avons gardé les différentes librairies utilisés dans le code fournis. Nous avons utilisé GLFW 3 comme libraire de gestion de fenêtre et de contexte OpenGL, GLM comme librairie mathématique OpenGL permettant de manipuler des matrices de toutes tailles et GLEW comme librairie de gestion des extensions d'OpenGL utilisés et surtout qui gère la plateforme sur laquelle on utilise OpenGL. \\
+ 
+La reconstruction 3D de ce qui est écris dans la vidéo capturé se fait en fin de programme. Le tracking produit un fichier de points 3D qui sont utlisés pour la reconstruction avec OpenGL. Ce programme s'effectue en 2 phases. \\
+
+\subsubsection{Initialisation de la fenêtre et du contexte OpenGL}
+La première phase consiste à initialiser les outils OpenGL utilisés. Dans un premier temps il a fallu initialiser la fenêtre OpenGL (CF. InitWindow) c'est à dire attribuer une version d'OpenGL utilisé, une taille  et même lier les fonctions d'evenement OpenGL (Mouvement de souris, touches clavier, etc) à la fenêtre. Ensuite il y a une initialisation du contexte OpenGL c'est à dire créer les outis qui permettent de lier les points 3D, la fenetre et d'autres valeurs à la carte Graphique (GPU). Pour cela on utilise des Vertex Array Object (VAO) qui permet de lier à la carte graphique un programme nommé Shader composé de FragmentShader qui sont utilisés pour dessiner dans la fenêtre OpenGL. On utilise également des Vertex Buffer Object (VBO) qui nous permettent de liés des variables (ou structures) stockés dans le processeur (CPU) avec le GPU qui permettront d'influer sur ce qui est dessiné dans la fenetre par le Shader. \\
+
+\subsubsection{Dessin des points dans le repère 3D}
+La deuxième phase est la phase de traitement des données. Dans un premier temps il a fallu "parser" le fichier dans lequel les points 3D sont contenu. Ensuite nous avons chargé dans deux VAO différents deux Shader, un qui sera utilisé pour construire un Plan dans le repère 3D et un second qui sera utilisé pour effectuer le dessin des points 3D du Tracking. Pour le dessin des points 3D lors du "parsing" nous placons chaque points dans des matrices 4 lignes 1 colonnes qui contiendront les coordonnés du repère 3D x,y,z et w, w permettant de retrouver les coordonnés euclidien du point 3D. Ces points sont placé des un Vector de Matrice 4. Une fois la liste rempli nous plaçon le point 3D dans la fenetre OpenGL à l'aide d'un savant calcul de placement de point qu'on nommera PVM. Ce PVM n'est rien d'autre qu'une suite de multiplication de matrices ordonnés : Matrice de Projection * Matrice de View * Matrice de Model qui permmettent de rendre visible un dessin dans une fenete OpenGL en fonction de la position de la Camera et des coordonnées du point à dessiner.
+La matrice de Model M est obtenue par la translation T , la rotation R (ou zoom) appliqué sur l'objet tel que : R * T * v = M * v où v est un vecteur de l'objet.
+La matrice de Vue V est obtenue par la multiplication de la matrice de Model et un alignement des objet de la fenetre par rapport à la vue humaine : v' = V * M * v où v est une vecteur de l'objet.
+La matrice de Projection P est obtenue par la multiplication de la matrice de Vue et de Model et une projection dans la fenetre des objets : v' = P * V * M * v où v est une vecteur de l'objet.
+une fois Ces valeurs de PVM envoyé au GPU le point est alors dessiné et est visible sur la fenetre.
+Pour le dessin du Plan nous avons repris les paramètres PVM calculé precedement et dessiné des points placé dans le repère 3D qui forment une plan.
+Nous avons alors en visuel le plan et ce qui a été reconstruit en 3D représentant ce qui est écrit dans la vidéo, dans la fenetre. il est alors possible de bouger dans la fenetre avec des touches clavier et d'orienter sa vue en fonction de la position de la souris.
