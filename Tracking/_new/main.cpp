@@ -142,7 +142,7 @@ int main(int argc, char ** argv)
 #endif // OPENCV
 
 #ifdef OPENGL
-	myOpenGL myApp;
+	MyOpenGL myApp;
 	myApp.InitWindow();
 	cout << "INIT WINDOW FINISHED" << endl;
 	myApp.InitVertex();
