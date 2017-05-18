@@ -628,39 +628,41 @@ int main(int argc, char* argv[]){
                 }
             }
 
+            // convert the raw image to a BGR image
             rawImageArray[id].Convert(FlyCapture2::PIXEL_FORMAT_BGR, &rgbImageArray[id]);
             unsigned int rowBytes = (double)rgbImageArray[id].GetReceivedDataSize() / (double)rgbImageArray[id].GetRows();
+            // create a matrix with the new BGR image
             imageArray[id] = cv::Mat(rgbImageArray[id].GetRows(), rgbImageArray[id].GetCols(), CV_8UC3, rgbImageArray[id].GetData(), rowBytes);
 
             #pragma omp barrier
 
-            // Use only if we want to display a window while capturing video
-            
+            // Used only if user wants a display of the acquisition
             #pragma omp single
             {
                 if(display){
                     string s = "Cameras :  ";
-                    int totalWidth = 0;
-                    int maxHeight = 0;
-                    int offset = 0;
+                    int totalWidth = 0; // total width of the window
+                    int maxHeight = 0; // max height of the window
+                    int offset = 0; // offset to put the next image in the window
                     for(unsigned int i = 0; i < numCameras; i++){
-                        totalWidth += imageArray[i].size().width;
+                        totalWidth += imageArray[i].size().width; // total width equals to the cumsum of all image's width
                         int height = imageArray[i].size().height;
                         if(maxHeight < height){
-                            maxHeight = height;
+                            maxHeight = height; // max height equals to the maximum height of all images
                         }
                         s += int2str(i) + "  ";
                     }
 
-                    cv::Mat imageROI(maxHeight, totalWidth, CV_8UC3);
+                    cv::Mat imageROI(maxHeight, totalWidth, CV_8UC3); // creating a matrix with adaptated size
 
                     for(unsigned int i = 0; i < numCameras; i++){
+                        // positioning the image into the window
                         cv::Mat matrix(imageROI, cv::Rect(offset, 0, imageArray[i].size().width, imageArray[i].size().height));
                         imageArray[i].copyTo(matrix);
-                        offset += imageArray[i].size().width;
+                        offset += imageArray[i].size().width; // increase the offset by the width of the recently placed image
                     }
 
-                    imshow(windowName, imageROI);
+                    imshow(windowName, imageROI); // display window
                 }
                 
             }
@@ -674,7 +676,7 @@ int main(int argc, char* argv[]){
                 string name = date + fileSeparator + date + "_calib_camera_" + int2str(id) + "_" + int2str(numCalib) + format;
                 cout << "Save calibration image n° " <<time << endl;
                 numCalib++;
-                cv::imwrite(name, imageArray[id], compression_params);
+                cv::imwrite(name, imageArray[id], compression_params); // write a calib picture
                 
                 fileStorageArray[id] << name;
             }
@@ -684,11 +686,11 @@ int main(int argc, char* argv[]){
                 string name = date + fileSeparator + date + "_camera_" + int2str(id) + "_pic_" + int2str(numPic) + format;
                 cout << "Save common image n° " << numCalib << endl;
                 numPic++;
-                cv::imwrite(name, imageArray[id], compression_params);
+                cv::imwrite(name, imageArray[id], compression_params); // write a common picture
             }
 
             if('y' == chV || 'Y' == chV){
-                outputVideoArray[id].write(imageArray[id]);
+                outputVideoArray[id].write(imageArray[id]); // write the image in the video file
             }
 
             #pragma omp single
@@ -734,6 +736,7 @@ int main(int argc, char* argv[]){
     }
 
     for(unsigned int i = 0; i < numCameras; i++){
+        // releasing connected cameras / files
         outputVideoArray[i].release();
         errorArray[i] = cameraArray[i].StopCapture();
         cameraArray[i].Disconnect();
