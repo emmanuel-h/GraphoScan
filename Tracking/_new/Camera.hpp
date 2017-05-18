@@ -25,10 +25,11 @@ const GLfloat ZOOM = 45.0f;
  * \class Camera
  * \brief class for Camera management
  *
- * Class which initialize Camera and generate PVM matrix for 3D reconstruction
+ * Class which initialize Camera, generate PVM matrix for 3D reconstruct, and update Cameron on event
  *
  */
 class Camera {
+  
 public:
   //Camera Attributes
   glm::vec3 mPosition;
@@ -82,6 +83,11 @@ mPosition = glm::vec3(xpos, ypos, zpos);
   mPitch = pitch;
   updateCameraVectors();
   };
+
+  /*!
+   * \brief class destructor
+   */
+  ~Camera(){};
 
   /*!
    * \brief Create view matrix
