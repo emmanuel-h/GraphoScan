@@ -16,6 +16,7 @@ using namespace std;
 vector<Point2f> roi;
 bool isFinished = false;
 int mNum = 4;
+string name_window="Tracking";
 
 GraphoScan::GraphoScan() {
   init();
@@ -49,8 +50,8 @@ void GraphoScan::myGammaCorrection(cv::Mat& img, float fgamma)
 
 // selectionne un quadrilatère pour possiblement ne travailler à l'intérieur de celui ci
 void GraphoScan::mySelectBg(const char * fileName_video, const char * fileName_pt_bg){
-  cv::namedWindow("bp");
-  cv::setMouseCallback("bp", mouseSelectPoint);
+  cv::namedWindow(name_window);
+  cv::setMouseCallback(name_window, mouseSelectPoint);
 
   VideoCapture cap(fileName_video);
   cap.read(imgSrc);
@@ -89,10 +90,12 @@ void GraphoScan::mySelectBg(const char * fileName_video, const char * fileName_p
 	  break;
 	}
 
-      cv::imshow("bp", imgSrc + temp);
+      cv::imshow(name_window, imgSrc + temp);
 
-      if (waitKey(30) == 27)
+      if (waitKey(1) == 27){
+	cv::destroyWindow(name_window);
 	exit(1);
+      }
     }
   //ajoute des points pour obtenir une zone carr¨¦e (maybe)
   insertPoints(vect, 20);
@@ -224,7 +227,7 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
   //choisir la ROI
   //selectROI(windowName,img,showCrossair,fromCenter)
   Rect2d box = selectROI("selectRoi", imgRoi, true, true);
-
+  cv::destroyWindow("selectRoi");
   //limiter la taille du rectangle de la ROI
   if (box.width < MIN_RECT_WIDTH)
     {
@@ -259,10 +262,17 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
   imgTrajectoire = cv::Mat::zeros(imgRoi.size(), imgRoi.type());
   imgTrajectoire_cor = imgTrajectoire.clone();
 
+  cv::namedWindow(name_window,CV_WINDOW_NORMAL);
+  cv::setWindowProperty(name_window,CV_WND_PROP_FULLSCREEN,CV_WINDOW_FULLSCREEN);
+  
   int frameCount = 0;
   double tempsCalc = (double)getTickCount();
   for (;nFrameStart + frameCount < nFrameEnd;)
     {
+      if(cv::waitKey(1)==27){
+	cv::setWindowProperty(name_window,CV_WND_PROP_FULLSCREEN,CV_WINDOW_NORMAL);
+      }
+      
       double t = (double)getTickCount();
 
       cap.read(imgSrc);
@@ -326,9 +336,9 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
 
       cv::rectangle(imgSuivi, box, Scalar(0, 0, 255), 2);
       cv::circle(imgSuivi, ptCenter, 0, Scalar(0, 255, 255), 2);
-
-      cv::imshow("ROI", imgRoi + imgSuivi);
-      cv::imshow("Trajectoire", imgTrajectoire);
+      
+      //cv::imshow("ROI", imgRoi + imgSuivi);
+      //cv::imshow("Trajectoire", imgTrajectoire);
       //cv::imshow("Src", imgSrc + temp);
 
       //enregistrer deux images dans une seule fen¨ºtre
@@ -342,8 +352,8 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
       //copie imgTrajectoire dans la 2eme moitie d'imgAll
       imgTrajectoire.copyTo(imgAll(Rect(imgRoi.cols, 0, imgRoi.cols, imgRoi.rows)));
 
-      cv::imshow("imgAll", imgAll);
-
+      cv::imshow(name_window, imgAll);
+      
       if ((saveVideo == 'y') || (saveVideo == 'Y'))
 	//stocker les vid¨¦os
 	{
@@ -357,9 +367,8 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
       t = (double)cvGetTickCount() - t;
       std::cout << "cost time(show images):" << t / ((double)getTickFrequency()*1000.f) << endl;
 
-      if (waitKey(30) == 27)
-	break;
     }
+  cv::destroyWindow(name_window);
   tempsCalc -= (double)getTickCount();
   std::cout << "le temps de calcul est : " << tempsCalc << endl;
 }
@@ -556,8 +565,8 @@ void GraphoScan::myTrackerMatchTemplate(const char * filename, bool isTransPersp
       cv::rectangle(imgSuivi, box, Scalar(0, 0, 255), 2);
       cv::circle(imgSuivi, ptCenter, 0, Scalar(0, 255, 255), 2);
 
-      cv::imshow("ROI", imgRoi + imgSuivi);
-      cv::imshow("Trajectoire", imgTrajectoire);
+      // cv::imshow("ROI", imgRoi + imgSuivi);
+      //cv::imshow("Trajectoire", imgTrajectoire);
       //cv::imshow("Src", imgSrc + temp);
 
       //enregistrer deux images dans une seule fen¨ºtre
@@ -581,7 +590,7 @@ void GraphoScan::myTrackerMatchTemplate(const char * filename, bool isTransPersp
       t = (double)cvGetTickCount() - t;
       std::cout << "cost time(show images):" << t / ((double)getTickFrequency()*1000.f) << endl;
 
-      if (waitKey(30) == 27)
+      if (waitKey(1) == 27)
 	break;
     }
 
@@ -707,11 +716,12 @@ void GraphoScan::saveTrajectoire(vector<cv::Point2f> pts, const char * filenName
 //C
 void GraphoScan::calcImgPtsAndImgTrack()
 {
+  string window_hog = "HOG";
 #ifdef MYHOG
   //transforme l'image d'imgTrajectoire_cor :
   //les points sont reli¨¦s et mis en noirs et blancs
   imgTrajectoire_cor = getImgTrajectoire_Cor(ptsObjet);
-  cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
+  //  cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
 	
   //utiliser la caracteristique de Hog
   MyHog hog;
@@ -732,14 +742,15 @@ void GraphoScan::calcImgPtsAndImgTrack()
   std::cout << "type of imgPtsObjet: " << imgPtsObjet.type() << endl;
   std::cout << "type of imgMag: " << imgMag.type() << endl;
 
-  cv::namedWindow("imgPtsObjet");
+  /*
+  cv::namedWindow(window_hog);
 
   int C = 1;
   int beta = 8;
   int alpha = 0;
-  cv::createTrackbar("Constant", "imgPtsObjet", &C, 50);
-  cv::createTrackbar("Beta", "imgPtsObjet", &beta, 10);
-  cv::createTrackbar("Alpha", "imgPtsObjet", &alpha, 50);
+  cv::createTrackbar("Constant", window_hog, &C, 50);
+  cv::createTrackbar("Beta", window_hog, &beta, 10);
+  cv::createTrackbar("Alpha", window_hog, &alpha, 50);
   while (true)
     {
       //cv::Mat mask = cv::Mat(imgMag.size(), CV_8UC1).setTo(-128);
@@ -756,22 +767,23 @@ void GraphoScan::calcImgPtsAndImgTrack()
       cv::dilate(imgPtsObjet, imgPtsObjet, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
       //erode(imgPtsObjet, imgPtsObjet, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
 
-      cv::imshow("imgPtsObjet", imgPtsObjet);
+      // cv::imshow(window_hog, imgPtsObjet);
 
-      if (waitKey(30) == 27)
+      if (waitKey(1) == 27)
+	{
+	  cv::destroyWindow(window_hog);
 	break;
-    }
+	}
+	}*/
 #else
-  imgTrajectoire_cor = getImgTrajectoire_Cor(ptsObjet);
-  cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
-
+  
   cv::Mat imgBin;
   cvtColor(imgRoi, imgBin, CV_BGR2GRAY);
 
   threshold(imgBin, imgBin, 128, 256, CV_THRESH_BINARY_INV);
   //cv::adaptiveThreshold(imgMag, imgMag, 255, ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY_INV, 5, 2);
 
-  cv::imshow("imgBin", imgBin);
+  //cv::imshow("imgBin", imgBin);
 
   int size = 3;
   cv::Mat kernel_Ero = getStructuringElement(MORPH_ELLIPSE, Size(size, size));
@@ -784,26 +796,55 @@ void GraphoScan::calcImgPtsAndImgTrack()
   std::cout << "type of imgTrajectoire_cor: " << imgTrajectoire_cor.type() << endl;
   std::cout << "type of imgPtsObjet: " << imgPtsObjet.type() << endl;
   std::cout << "type of imgBin: " << imgPtsObjet.type() << endl;
-
-  cv::namedWindow("imgPtsObjet");
+  /*
+  cv::namedWindow(window_hog);
 
   int C = 1;
   int beta = 8;
   int alpha = 0;
-  cv::createTrackbar("Constant", "imgPtsObjet", &C, 50);
-  cv::createTrackbar("Beta", "imgPtsObjet", &beta, 10);
-  cv::createTrackbar("Alpha", "imgPtsObjet", &alpha, 50);
+  cv::createTrackbar("Constant", window_hog, &C, 50);
+  cv::createTrackbar("Beta", window_hog, &beta, 10);
+  cv::createTrackbar("Alpha",window_hog , &alpha, 50);
   while (true)
     {
 
-      cv::imshow("imgPtsObjet", imgPtsObjet);
+       cv::imshow(window_hog, imgPtsObjet);
 
-      if (waitKey(30) == 27)
-	return;
+      if (waitKey(1) == 27)
+	{
+	  cv::destroyWindow(window_hog);
+	  return;
+	}
     }
+  */
 
+  
 #endif // MYHOG
+}
 
+void GraphoScan::showImgTrackAndHog(string imgTrack, string imgHog){
+  string window_track_hog = "Tracking + HOG";
+  cv::namedWindow(window_track_hog,CV_WINDOW_NORMAL);
+  cv::setWindowProperty(window_track_hog,CV_WND_PROP_FULLSCREEN,CV_WINDOW_FULLSCREEN);
+  
+  Mat imageTrack = imread(imgTrack,CV_LOAD_IMAGE_COLOR);
+  Mat imageHOG = imread(imgHog,CV_LOAD_IMAGE_COLOR);
+  if(!imageTrack.data || !imageHOG.data){
+    cout << "Could not open or find the tracking and/or hog image" << endl;
+    return;
+  }
+  while(true){
+    cv::Mat imgAll = cv::Mat(imageTrack.rows, imageTrack.cols * 2, imageTrack.type());
+    imageTrack.copyTo(imgAll(Rect(0, 0, imageTrack.cols, imageTrack.rows)));
+    imageHOG.copyTo(imgAll(Rect(imageTrack.cols, 0, imageHOG.cols, imageHOG.rows)));
+    cv::imshow(window_track_hog, imgAll);
+    if(cv::waitKey(1)==27){
+      cv::destroyWindow(window_track_hog);
+      break;
+    }
+    
+  }
+  
 }
 
 void GraphoScan::saveImgPtsAndImgTraject(const char* filename_imgPtsObjet,const char* filename_imgTrajectoire_cor)
@@ -876,7 +917,7 @@ cv::Mat GraphoScan::transformPerspective(const cv::Mat & imgSrc)
 	  break;
 	}
       cv::imshow("Src", imgSrc + temp);
-      if (waitKey(30) == 27)
+      if (waitKey(1) == 27)
 	exit(1);
     }
   //setMouseCallback("Src", NULL);
@@ -886,7 +927,7 @@ cv::Mat GraphoScan::transformPerspective(const cv::Mat & imgSrc)
 
   cv::rectangle(temp, rect, Scalar(0, 0, 255), 2);
 
-  cv::imshow("Src", imgSrc + temp);
+  //cv::imshow("Src", imgSrc + temp);
 
   //ajuster le rectangle de la ROI
   Point2f ptM0 = (roi[0] + roi[1]) / 2;
@@ -936,8 +977,8 @@ void GraphoScan::readImages(const char* filename_imgPtsObjet,const char* filenam
   std::cout << "imgPtsObjet.type()" << imgPtsObjet.type() << endl;
   std::cout << "imgTrajectoire_cor.type()" << imgTrajectoire_cor.type() << endl;
 
-  cv::imshow("imgPtsObjet", imgPtsObjet);
-  cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
+  //cv::imshow("imgPtsObjet", imgPtsObjet);
+  //cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
 
   if ((imgPtsObjet.rows != imgTrajectoire_cor.rows) && (imgPtsObjet.cols&&imgTrajectoire_cor.cols))
     {
@@ -978,7 +1019,7 @@ void GraphoScan::drawTrack()
   //remove the points from the trajective curve
   cv::Mat imgPur = nettoyageImage(imgDst, ptsObjet, 20);
 
-  cv::imshow("imgPur", imgPur);
+  //cv::imshow("imgPur", imgPur);
   cv::waitKey();
 }
 
@@ -1041,9 +1082,9 @@ cv::Mat GraphoScan::findPoints()
   std::cout << "count2_255 = " << count2_255 << endl;
   std::cout << "count = " << count << endl;
 
-  cv::imshow("imgDst", imgDst);
-  cv::imshow("imgPtsObjet", imgPtsObjet);
-  cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
+  //cv::imshow("imgDst", imgDst);
+  //cv::imshow("imgPtsObjet", imgPtsObjet);
+  //cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
 
   return imgDst;
 }
@@ -1108,7 +1149,7 @@ cv::Mat GraphoScan::nettoyageImage(const cv::Mat& imgDst, vector<Point2f> ptsObj
 	}
 
       cv::imshow("imgDst_3", imgDst_3);
-      if (waitKey(30) == 27)
+      if (waitKey(1) == 27)
 	{
 	  //traitement d'images
 	  cv::cvtColor(imgDst_3, imgDst_3, CV_BGR2GRAY);

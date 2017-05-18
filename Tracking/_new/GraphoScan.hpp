@@ -61,6 +61,8 @@ public:
 
   void calcImgPtsAndImgTrack();
 
+  void showImgTrackAndHog(string imgTraj,string imgTraj_cor);
+  
   void saveImgPtsAndImgTraject(const char* filename_imgPtsObjet,const char* filename_imgTrajectoire_cor);
 
   void saveTrajectoire(const char* filename);
