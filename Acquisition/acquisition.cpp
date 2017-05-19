@@ -48,9 +48,9 @@ using namespace std;
 static unsigned int serialNumber[] = {15508330, 15508311};
 
 /*!
- * \brief default mode for performance measurement is set to true
+ * \brief default mode for performance measurement is set to false
  */
-static bool bench = true;
+static bool bench = false;
 
 /*!
  * \brief default mode for display a window while capturing is set to false
@@ -217,7 +217,6 @@ int undistortion(int numCamera, string id, cv::Size imageSize, string date){
     cout << endl << "========== Read calibration parameters from file ==========" << endl;
 
     string name = "Calib_camera_" + int2str(numCamera) + "_Matlab.txt";
-    //string name = "camera" + int2str(numCamera) + ".txt";
     ReadInnerParam(name.c_str(), cm, dc);
 
     cv::Mat cameraMatrix = cv::Mat(3, 3, CV_64FC1, cm);
@@ -235,7 +234,7 @@ int undistortion(int numCamera, string id, cv::Size imageSize, string date){
         return -1;
     }
 
-    int frame = capture.get(CV_CAP_PROP_FRAME_COUNT);
+    int frame = capture.get(CV_CAP_PROP_FRAME_COUNT); // we get the number of frame in the video
 
     cv::VideoWriter undist;
 
@@ -376,6 +375,7 @@ int main(int argc, char* argv[]){
         bool cameraMatch = false;
         Error error1, error2;
         unsigned int i = 0;
+        int nbTry = 0;
         do{
             error1 = cameraArray[id].Connect(&guidArray[i]);
             error2 = cameraArray[id].GetCameraInfo(&camInfoArray[id]);
@@ -393,8 +393,13 @@ int main(int argc, char* argv[]){
                 cameraMatch = true;
                 break;
             }
-            i++;
-        }while(!cameraMatch && i < (numCameras - 1));
+            if(numCameras - 1 == i){
+                i = 0;
+            }else{
+                i++;
+            }
+            nbTry++;
+        }while(!cameraMatch && nbTry < 5);
 
         if(!cameraMatch){
             cout << "Error : unable to match cameras with their serial number" << endl;
@@ -439,7 +444,7 @@ int main(int argc, char* argv[]){
 	char* folder = const_cast<char*>(date.c_str());
     string make;
     if(WINDOWS){
-        make = "md"; // Under Windows OS, we create a new folder with 'md' command
+        make = "md "; // Under Windows OS, we create a new folder with 'md' command
     }else{
         make = "mkdir "; // Under UNIX OS, we create a new folder with 'mkdir' command
     }
@@ -447,6 +452,14 @@ int main(int argc, char* argv[]){
 	strcpy(foldermake, make.c_str());
 	strcat(foldermake, folder);
 	system(foldermake);
+
+    if(bench){
+        char* folderBench = const_cast<char*>("Bench");
+        char* foldermakeBench = new char[strlen(folderBench) + strlen(make.c_str()) + 1];
+        strcpy(foldermakeBench, make.c_str());
+        strcat(foldermakeBench, folderBench);
+        system(foldermakeBench);
+    }
 
     string fileSeparator;
     if(WINDOWS){
@@ -460,7 +473,7 @@ int main(int argc, char* argv[]){
 	cout << "=============== Picture & Videos ==============" << endl;
 
     char chP;
-    if(!BENCH){ // in BENCH mode, we do not take calibration pictures
+    if(!bench){ // in BENCH mode, we do not take calibration pictures
         cout << "Do you want to take pictures for calibration (press SPACE to take pictures) ? (y/n)" << endl;
         cin >> chP;
     }else{
@@ -468,7 +481,7 @@ int main(int argc, char* argv[]){
     }
 
     char chV;
-    if(!BENCH){ // in BENCH mode, we save up captured videos
+    if(!bench){ // in BENCH mode, we save up captured videos
         cout << "Do you want to take videos (video begins immediately) ? (y/n)" << endl;
         cin >>chV;
     }else{
@@ -698,7 +711,7 @@ int main(int argc, char* argv[]){
                 if(display){
                     // decrease the value for the tests
                     // increase it for more "user-friendly" experience (the time gap to press ESC is longer)
-                    // /!\ Increasing it too much leads to a heavy drop in FPS
+                    // /!\ Increasing it too much leads to a heavy drop in FPS (and is quite pointless)
                     key = cv::waitKey(1);
                 }
             }
@@ -715,7 +728,7 @@ int main(int argc, char* argv[]){
     double fps;
     double sec;
 
-    if(BENCH){
+    if(bench){
         time(&end); // stoping timer for FPS benchmark
         cout << "Benchmarking FPS on " << counterArray[0] << " iterations" << endl;
         sec = difftime(end, start);
