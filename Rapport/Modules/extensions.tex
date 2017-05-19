@@ -16,3 +16,9 @@ Une extension possible serait de réaliser une interface graphique, par exemple 
 \subsection{Bouger la feuille}
 
 La dernière amélioration à apporter au code serait de pouvoir bouger la feuille. Une technique possible serait de faire du multi-tracking sur deux points. En effet, en dessinant juste deux points noirs sur la feuille et en faisant du tracking dessus, on serait capable de détecter tout mouvement ou rotation de la feuille. Il suffira donc par la suite d'appliquer une translation aux coordonnées de l'écriture par rapport à celle de ces deux points pour pouvoir avoir une image qui colle plus à la réalité.
+
+\subsection{Synchronisation native}
+En naviguant sur la documentation de PointGrey (le fabricant des caméras), nous nous sommes rendu compte qu'il existait déjà un moyen de faire de l'acquisition stéréo ( \cite{stereo_pt} ), grâce à des fonctions dans l'API fournie, et à un cable reliant les caméras. Peut-être faudrait-il envisager aussi cette solution dans le futur, même si notre travail d'amélioration du code de l'étudiant précédent s'étant occupé de cette partie est désormais fini. Il y aurait donc peut-être moyen dans le futur de supprimer la partie de l'acquisition vidéos, et de juste utiliser la deuxième phase du code, avec un peu de modifications pour intégrer cette acquisition native avant. Cela permettrait d'avoir une application en un bloc, plutôt que séparée comme actuellement.
+
+\subsection{Reconstruction 3D à n caméras}
+Comme dit dans le bilan, la fonction qui met en relation des points en 2D pour faire des points 3D ne prend que deux caméras. Pour modifier cela, il faudrait changer la méthode de reconstruction 3D de points qui actuellement ne prend les points que de deux caméras. Une autre solution serait de lancer le programme sur toutes les paires de caméras et de faire ensuite la moyenne des points récoltés pour plus de réalisme dans la reconstruction.
