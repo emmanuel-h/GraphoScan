@@ -15,7 +15,7 @@ Dans le cas où l'utilisateur souhaite faire un affichage de la capture qu'il es
 #pragma omp single
 \end{verbatim}
 afin de s'occuper de cet affichage.
-Enfin, chaque thread écrit la frame dans la vidéo correspondante à sa caméra.
+Enfin, chaque thread écrit la frame dans la vidéo correspondant à sa caméra.
 
 \subsection{Export des paramètres de la caméra}
 
@@ -36,6 +36,32 @@ Pour ce faire, une fois les paramètres de calibration calculés dans MatLab , o
 
 Il faut remplacer $*NUM\_CAMERA*$ par le nom de l'objet de la caméra correspondante.
 
+\subsection{Tracking}
+
+De nombreux algorithmes de tracking existent, dans ce projet nous en utilisons plusieurs, tous fournis par OpenCV:
+\begin{itemize}
+\item KCF (High-Speed Tracking with Kernilized Correlation Filters) utilise les propriétés des matrices circulantes pour faire son tracking. (cf \cite{kernelized_correlation_filters})
+\item TLD (Tracking Learning Detection) suit l'objet voulu image par image et grâce à une comparaison avec toutes les apparences observées réajuste le tracker de la cible. 
+\item MIL (Multiple instance learning) crée et enrichie un classifieur pour sé\-pa\-rer l'objet suivi et le reste de l'image.
+\item Boosting, comme MIL, utilise des classifieurs pour savoir où est l'objet et où sont les éléments extérieurs. 
+\end{itemize}
+Il y a également d'autres algorithmes mais nous n'avons pas eu le temps de les tester.
+L'étudiant précédent a fait une comparaison entre l'algorithme KCF et TLD, à l'aide du comparatif des méthodes de tracking existantes, proposé par Joao F.Henriques et de quelques tests, il en est ressorti que KCF était plus efficace que TLD. 
+Toutefois nous nous sommes également penché sur ce sujet. Pour savoir si un algorithme de tracking est plus efficace qu'un autre nous les avons comparés sur différents critères: 
+\begin{itemize}
+\item La perte ou non du tracker sur la cible.
+\item La taille du tracker nécessaire pour avoir un tracking.
+\item Le suivi de certains mouvements.
+\item La rapidité d'exécution de l'algorithme.
+\end{itemize}
+Après avoir défini ces critères nous avons commencé les tests sur les mêmes vidéos à 30 fps. Ces tests ont donné des résultats complètement différents pour chaque algorithme. Il faut toutefois relativiser ces tests à la taille de la ROI. En effet, plus celle-ci est grande, et plus l'algorithme sera lent à l'exécution.
+
+KCF est l'algorithme le plus stable, le tracker suit parfaitement la cible tant que celle-ci n'effectue pas un mouvement trop rapide. C'est également celui qui a le temps d'exécution le plus rapide. Après analyse de son code (OpenSource), nous avons ressorti une complexité d'environ $O(n^{4})$, toutefois cette analyse fut rapide et nous n'avons pas eu le temps de l'approfondir.
+Boosting et MIL, qui utilisent la même technique d'apprentissage et d'enrichissement de classifieurs, donnent les mêmes résultats. Le choix de la région d'interêt (ROI) a un impact significatif sur le tracking. L'utilisation d'un multi-tracker favorise l'analyse de l'image et ressort un tracking efficace, de plus la sélection d'une grande ROI n'a pas de réel impact.
+TLD donne des résultats complètement différents selon la situation. Lors d'un tracking sur des mouvements simples, celui-ci est le moins efficace de tous. En effet, il recalcule la ROI à chaque frame ce qui est très coûteux et modifie le résultat final du tracking. Toutefois lors de mouvements rapides, qui ne sont pas gérés par les autres algorithmes, TLD arrive à retrouver  l'objet grâce à sa base de connaissance.
+
+A partir de tous ces tests nous en avons conclu que le choix de l'algorithme dépend de l'objet que l'on veut suivre. Si celui-ci est simple à observer, KCF est le plus approprié, mais lorsqu'il commence à être plus compliqué à suivre, il est préférable de se tourner vers les autres algorithmes qui utilisent leurs bases de connaissances pour retrouver l'objet.
+
 \subsection{Fonctionnement de la reconstruction 3D}
 
 Pour faire la reconstruction nous avons gardé les différentes librairies utilisées dans le code fourni. Nous avons utilisé GLFW 3 comme libraire de gestion de fenêtre et de contexte OpenGL, GLM comme librairie mathématique permettant de manipuler des matrices de toute taille et GLEW comme librairie de gestion des extensions utilisées et surtout pour gérer la plateforme sur laquelle on utilise OpenGL. \\
@@ -46,7 +72,7 @@ La reconstruction 3D de ce qui est écrit dans la vidéo capturée se fait en fi
 La première phase consiste à initialiser les outils OpenGL utilisés. Dans un premier temps il a fallu initialiser la fenêtre OpenGL, c'est à dire attribuer la version d'OpenGL utilisée, une taille, et même lier les fonctions d'évenement OpenGL (mouvement de souris, touches clavier, etc) à la fenêtre. Ensuite il y a une initialisation du contexte, c'est à dire créer les outils qui permettent de lier les points 3D, la fenêtre et d'autres valeurs à la carte graphique (GPU). Pour cela on utilise des Vertex Array Object (VAO) qui permettent de lier à la carte graphique un programme nommé Shader, composé de FragmentShader qui sont utilisés pour dessiner dans la fenêtre. On utilise également des Vertex Buffer Object (VBO) qui nous permettent de lier des variables (ou structures) stockées dans le processeur (CPU) avec la GPU, qui permettront d'influer sur ce qui est dessiné dans la fenêtre par le Shader. \\
 
 \subsubsection{Dessin des points dans le repère 3D}
-La deuxième phase est la phase de traitement des données. Dans un premier temps il a fallu \textit{parser} le fichier dans lequel les points 3D sont contenus. Ensuite nous avons chargé dans deux VAO différents deux Shaders, un qui sera utilisé pour construire un plan dans le repère 3D et un second qui sera utilisé pour effectuer le dessin des points 3D du tracking. Pour le dessin des points lors du \textit{parsing} nous plaçons chaque point dans des matrices à quatre lignes et une colonne qui contiendront les coordonnées du repère x,y,z et w - w permettant de retrouver les coordonnés euclidienne du point. Une fois la liste remplie nous plaçons le point dans la fenêtre OpenGL à l'aide d'un savant calcul de placement de point qu'on nommera PVM. Ce PVM n'est rien d'autre qu'une suite de multiplications de matrices ordonnées : matrice de projection * matrice de vue * matrice de modèle qui permettent de rendre visible un dessin dans une fenêtre en fonction de la position de la camera et des coordonnées du point à dessiner.
+La deuxième phase est la phase de traitement des données. Dans un premier temps il a fallu \textit{parser} le fichier dans lequel les points 3D sont contenus. Ensuite nous avons chargé dans deux VAO différents deux Shaders, un qui sera utilisé pour construire un plan dans le repère 3D et un second qui sera utilisé pour effectuer le dessin des points 3D du tracking. Pour le dessin des points lors du \textit{parsing} nous plaçons chaque point dans des matrices à quatre lignes et une colonne qui contiendront les coordonnées du repère x,y,z et w. Une fois la liste remplie nous plaçons le point dans la fenêtre OpenGL à l'aide d'un savant calcul de placement de point qu'on nommera PVM. Ce PVM n'est rien d'autre qu'une suite de multiplications de matrices ordonnées : matrice de projection * matrice de vue * matrice de modèle qui permettent de rendre visible un dessin dans une fenêtre en fonction de la position de la camera et des coordonnées du point à dessiner.
 La matrice du modèle (M) est obtenue par la translation T , la rotation R appliquée sur l'objet tel que : $R * T * v = M * v$ où v est un vecteur de l'objet.
 La matrice de vue (V) est obtenue par la multiplication de M et un alignement des objets de la fenêtre par rapport à la vue humaine : $v' = V * M * v$ où v est un vecteur de l'objet.
 La matrice de projection (P) est obtenue par la multiplication de V, M, et une projection dans la fenêtre des objets : $v' = P * V * M * v$ où v est un vecteur de l'objet.
