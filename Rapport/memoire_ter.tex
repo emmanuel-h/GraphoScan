@@ -1,11 +1,11 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{indentfirst}
-\usepackage{graphicx}
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 \usepackage{url}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage[export]{adjustbox}
 
 \begin{document}
 \thispagestyle{empty}
@@ -51,10 +51,6 @@ Martin \textsc{Réty}
 
 \input{Modules/resume.tex}
 
-\section{Introduction au domaine}
-
-\input{Modules/intro_domaine.tex}
-
 \section{Analyse de l'existant}
 
 \input{Modules/analyse_existant.tex}
@@ -83,24 +79,24 @@ Martin \textsc{Réty}
 
 Les petites barres sur les diagrammes de Gantt (Figure \ref{gantt} et suivantes) correspondent aux différentes réunions que l'on a eu, suivies des noms des participants. Les plus grandes correspondent quant à elles aux tâches effectuées. Il y en a peu pour le moment car la phase de compréhension et d'installation des composants a été relativement longue.
 
-\begin{figure}[!h]
-\centering
-\includegraphics[width=\textwidth]{Modules/Picture/gantt_final_0}
-\caption{Diagramme de Gantt - Partie 1}
-\label{gantt}
+\newpage
+
+\begin{figure}
+ \begin{minipage}{.5\textwidth}
+  \includegraphics[scale=0.5, angle=90]{Modules/Picture/gantt_final_0}
+  \caption{rr}
+ \end{minipage}
+ \begin{minipage}{.5\textwidth}
+  \includegraphics[scale=0.5, angle=90]{Modules/Picture/gantt_final_1}
+  \caption{Diagramme de Gantt}
+ \end{minipage}
+ \begin{minipage}{.5\textwidth}
+  \includegraphics[scale=0.3, angle=90]{Modules/Picture/gantt_final_2}
+  \caption{rr}
+ \end{minipage}
 \end{figure}
 
-\begin{figure}[!h]
-\centering
-\includegraphics[width=\textwidth]{Modules/Picture/gantt_final_1}
-\caption{Diagramme de Gantt - Partie 2}
-\end{figure}
-
-\begin{figure}[!h]
-\centering
-\includegraphics[width=\textwidth]{Modules/Picture/gantt_final_2}
-\caption{Diagramme de Gantt - Partie 3}
-\end{figure}
+\newpage
 
 \begin{figure}[!h]
 \centering
