@@ -94,7 +94,7 @@ void mouseSelectPoint(int event, int x, int y, int flags, void* userData)
 //en sortie : - une video compos¨¦e de la video originale et du tracker
 //			  - les points correspondants au centre du tracker dans les frames successives
 //			  - une video compos¨¦e des 2 videos precedentes
-void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
+void GraphoScan::myTracker(const char* filename,const string algo_name, bool isTransPerspective)
 {
   //si enregistrer le video
   std::cout << "Save video? [y/n]: ";
@@ -222,7 +222,7 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
     }
 
   //create a tracker 'KCF'
-  Ptr<Tracker> tracker = Tracker::create("KCF");
+  Ptr<Tracker> tracker = Tracker::create(algo_name);
 
   tracker->init(imgRoi, box);
 

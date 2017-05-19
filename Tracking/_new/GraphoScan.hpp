@@ -188,7 +188,7 @@ public:
    * \param filename video name 
    * \param isTransPerspective if you want perspective or not
    */
-  void myTrackerKCF(const char* filename, bool isTransPerspective = false);
+  void myTracker(const char* filename, const string algo_name ,bool isTransPerspective = false);
 
   /*!
    * \fn void init_VideoWritter()
