@@ -1,0 +1,55 @@
+\BOOKMARK [1][-]{section.1}{R\351sum\351 du projet}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Pr\351sentation}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{But du projet}{section.1}% 3
+\BOOKMARK [1][-]{section.2}{Analyse de l'existant}{}% 4
+\BOOKMARK [2][-]{subsection.2.1}{Fonctionnement de l'application}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.2}{Langages et frameworks utilis\351s}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.3}{Fonctionnalit\351s d\351j\340 impl\351ment\351es}{section.2}% 7
+\BOOKMARK [2][-]{subsection.2.4}{Fr\351quence d'acquisition limit\351e}{section.2}% 8
+\BOOKMARK [2][-]{subsection.2.5}{Impossibilit\351 de bouger la feuille}{section.2}% 9
+\BOOKMARK [2][-]{subsection.2.6}{Probl\350mes divers}{section.2}% 10
+\BOOKMARK [1][-]{section.3}{Besoins fonctionnels et non fonctionnels}{}% 11
+\BOOKMARK [2][-]{subsection.3.1}{Augmentation de la cadence d'acquisition}{section.3}% 12
+\BOOKMARK [3][-]{subsubsection.3.1.1}{Programmation parall\350le}{subsection.3.1}% 13
+\BOOKMARK [3][-]{subsubsection.3.1.2}{Complexit\351}{subsection.3.1}% 14
+\BOOKMARK [3][-]{subsubsection.3.1.3}{Modularit\351}{subsection.3.1}% 15
+\BOOKMARK [3][-]{subsubsection.3.1.4}{G\351n\351ralisation}{subsection.3.1}% 16
+\BOOKMARK [2][-]{subsection.3.2}{Tracking de la plume}{section.3}% 17
+\BOOKMARK [3][-]{subsubsection.3.2.1}{Analyse de la complexit\351}{subsection.3.2}% 18
+\BOOKMARK [3][-]{subsubsection.3.2.2}{Gestion mouvements}{subsection.3.2}% 19
+\BOOKMARK [2][-]{subsection.3.3}{Autres axes de travail}{section.3}% 20
+\BOOKMARK [3][-]{subsubsection.3.3.1}{Zone de capture}{subsection.3.3}% 21
+\BOOKMARK [3][-]{subsubsection.3.3.2}{Changement de la structure}{subsection.3.3}% 22
+\BOOKMARK [3][-]{subsubsection.3.3.3}{Compatibilit\351 Windows - Linux - macOS}{subsection.3.3}% 23
+\BOOKMARK [1][-]{section.4}{Prototypes et r\351sultats de tests pr\351paratoires}{}% 24
+\BOOKMARK [1][-]{section.5}{Architecture}{}% 25
+\BOOKMARK [2][-]{subsection.5.1}{Acquisition}{section.5}% 26
+\BOOKMARK [2][-]{subsection.5.2}{Tracking et reconstruction}{section.5}% 27
+\BOOKMARK [1][-]{section.6}{Algorithmes et structures de donn\351es}{}% 28
+\BOOKMARK [2][-]{subsection.6.1}{Parall\351lisation OpenMP}{section.6}% 29
+\BOOKMARK [2][-]{subsection.6.2}{Export des param\350tres de la cam\351ra}{section.6}% 30
+\BOOKMARK [2][-]{subsection.6.3}{Tracking}{section.6}% 31
+\BOOKMARK [2][-]{subsection.6.4}{Fonctionnement de la reconstruction 3D}{section.6}% 32
+\BOOKMARK [3][-]{subsubsection.6.4.1}{Initialisation de la fen\352tre et du contexte OpenGL}{subsection.6.4}% 33
+\BOOKMARK [3][-]{subsubsection.6.4.2}{Dessin des points dans le rep\350re 3D}{subsection.6.4}% 34
+\BOOKMARK [1][-]{section.7}{Complexit\351 de l'acquisition}{}% 35
+\BOOKMARK [1][-]{section.8}{Tests de fonctionnement et de validation}{}% 36
+\BOOKMARK [2][-]{subsection.8.1}{Latence}{section.8}% 37
+\BOOKMARK [2][-]{subsection.8.2}{FPS}{section.8}% 38
+\BOOKMARK [1][-]{section.9}{Bilan}{}% 39
+\BOOKMARK [1][-]{section.10}{Extensions et am\351liorations possibles}{}% 40
+\BOOKMARK [2][-]{subsection.10.1}{Droits d'auteur}{section.10}% 41
+\BOOKMARK [2][-]{subsection.10.2}{Interface graphique}{section.10}% 42
+\BOOKMARK [2][-]{subsection.10.3}{Bouger la feuille}{section.10}% 43
+\BOOKMARK [2][-]{subsection.10.4}{Synchronisation native}{section.10}% 44
+\BOOKMARK [2][-]{subsection.10.5}{Reconstruction 3D \340 n cam\351ras}{section.10}% 45
+\BOOKMARK [1][-]{section.11}{Planning}{}% 46
+\BOOKMARK [1][-]{section.12}{Manuel d'utilisation}{}% 47
+\BOOKMARK [2][-]{subsection.12.1}{Installation}{section.12}% 48
+\BOOKMARK [3][-]{subsubsection.12.1.1}{FlyCap}{subsection.12.1}% 49
+\BOOKMARK [3][-]{subsubsection.12.1.2}{OpenCV}{subsection.12.1}% 50
+\BOOKMARK [3][-]{subsubsection.12.1.3}{OpenGL, glew, glut et glm}{subsection.12.1}% 51
+\BOOKMARK [2][-]{subsection.12.2}{Utilisation}{section.12}% 52
+\BOOKMARK [3][-]{subsubsection.12.2.1}{Acquisition}{subsection.12.2}% 53
+\BOOKMARK [3][-]{subsubsection.12.2.2}{Reconstruction}{subsection.12.2}% 54
+\BOOKMARK [1][-]{section*.2}{References}{}% 55
