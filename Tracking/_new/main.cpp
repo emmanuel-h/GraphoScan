@@ -13,7 +13,7 @@
 #include "OpenGL.hpp"
 
 
-//#define OPENCV
+#define OPENCV
 #define OPENGL
 //#define STEREOVISION
 
@@ -129,8 +129,8 @@ int main(int argc, char ** argv)
 	//grapho_left.ptsObjet = pts;
 
 	//reperer des points manuellement(left)
-	//grapho_left.selectPointManuel("1207_undist_POLYTECH_L.avi");
-	//grapho_left.saveTrajectoire("pt1.txt");
+	grapho_left.selectPointManuel(filename_g);
+	grapho_left.saveTrajectoire("pt1.txt");
 
 
 	//grapho_right.ptsObjet = pts;

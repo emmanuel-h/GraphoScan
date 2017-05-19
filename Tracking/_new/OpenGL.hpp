@@ -20,7 +20,6 @@ const GLuint WIDTH = 800, HEIGHT = 600;
  * \brief class for 3D reconstruct
  *
  * Class which initialize OpenGL context with GLFW 3 and 3D reconstruct
- *
  */
 class MyOpenGL {
   
@@ -52,6 +51,7 @@ public:
   };
 
   /*!
+   * \fn ~MyOpenGL
    * \brief class destructor
    */
   ~MyOpenGL(){};
