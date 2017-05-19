@@ -81,9 +81,12 @@ void mouseSelectPoint(int event, int x, int y, int flags, void* userData) {
   }
 }
 
-void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective) {
+
+void GraphoScan::myTracker(const char* filename,const string algo_name, bool isTransPerspective) {
+  
   // if you need to save the video
   cout << "Save video? [y/n]: ";
+  
   cin >> saveVideo;
   if ((saveVideo == 'y') || (saveVideo == 'Y')) {
     init_VideoWritter();
@@ -179,9 +182,9 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective) {
     exit(1);
   }
 
-  // create a tracker with algoname in parameter
-  Ptr<Tracker> tracker = Tracker::create("KCF");
-
+  // create a tracker with algo_name in parameter
+  Ptr<Tracker> tracker = Tracker::create(algo_name);
+  
   tracker->init(imgRoi, box);
 
   //initialize matrix to record tracker trajectory

@@ -18,6 +18,7 @@
 //#define STEREOVISION
 
 
+string algo[]={"KCF","BOOSTING","MIL","TLD"};
 vector<Point2f> pts;
 bool isFrameSelected = false;
 int framesOfVideo(const char* filename);
@@ -29,9 +30,37 @@ void videoClipper(const char* videoName);
 int main(int argc, char ** argv)
 {
 
-  if(argc < 3){
-    cout << "Bad Number of Arguments" << endl;
+  if(argc == 2 && (strcmp(argv[1], "--help")==0 || strcmp(argv[1], "-h")==0)){
+    cout << "Usage: ./graphoScan VIDEO_FILENAME_LEFT VIDEO_FILENAME_RIGHT [ALGORITHM NAME]" << endl;
+    cout << "" << endl;
+    cout << "VIDEO_FILENAME_LEFT AND VIDEO_FILENAME_RIGHT must be .avi files" << endl;
+    cout << "ALGORITHM NAME: default value KCF"<< endl;
+    cout << "Other algorithms: TLD, MIL, BOOSTING"<<endl;;
     exit(1);
+  }
+  
+  if(argc < 3 || argc > 4){
+    cout << "Bad Number of Arguments" << endl;
+    cout << "Use ./graphoScan -h or ./graphoScan --help to open the help menu" << endl;
+    exit(1);
+  }
+
+  string algo_name;
+  if(argc == 4){
+    bool valid = false;
+    int length = (sizeof(algo)/sizeof(*algo));
+    for(int i=0; i < length ; i++){     
+      if(argv[3]==algo[i]){
+	valid = true;
+      }
+    }
+    if(valid){      
+      algo_name=argv[3];
+    }else{
+       cout << "Bad Algorithm Argument" << endl;
+       cout << "Good algorithms : KCF, TLD, BOOSTING, MIL" << endl;
+       exit(1);
+    }
   }
 
   char * filename_g = argv[1];
@@ -81,7 +110,7 @@ int main(int argc, char ** argv)
 	
 	//lance le tracking 
 	//grapho_left.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_g.avi");
-	grapho_left.myTrackerKCF(filename_g);
+	grapho_left.myTracker(filename_g,algo_name);
 
 	grapho_left.calcImgPtsAndImgTrack();
 
@@ -104,7 +133,7 @@ int main(int argc, char ** argv)
 	
 	//grapho_right.mySelectBg("undist_2007_R.avi", "pt_bg_undist_2007_R.txt");
 	//grapho_right.myTrackerKCF("/home/emmanuelh/Videos/3e_prise_d.avi");
-	grapho_right.myTrackerKCF(filename_d);
+	grapho_right.myTracker(filename_d,algo_name);
 
 	grapho_right.calcImgPtsAndImgTrack();
 
@@ -129,8 +158,8 @@ int main(int argc, char ** argv)
 	//grapho_left.ptsObjet = pts;
 
 	//reperer des points manuellement(left)
-	grapho_left.selectPointManuel(filename_g);
-	grapho_left.saveTrajectoire("pt1.txt");
+	//grapho_left.selectPointManuel(filename_g);
+	//grapho_left.saveTrajectoire("pt1.txt");
 
 
 	//grapho_right.ptsObjet = pts;
