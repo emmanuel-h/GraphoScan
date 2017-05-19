@@ -18,36 +18,6 @@ bool isFinished = false;
 int mNum = 4;
 string name_window="Tracking";
 
-GraphoScan::GraphoScan() {
-  init();
-}
-
-GraphoScan::~GraphoScan() {
-  if ((saveVideo == 'y') || (saveVideo == 'Y'))
-    {
-      outputVideo1.release();
-      std::cout << "outputVideo1 est bien relachee." << endl;
-      outputVideo2.release();
-      std::cout << "outputVideo2 est bien relachee." << endl;
-      outputVideo3.release();
-      std::cout << "outputVideo3 est bien relachee." << endl;
-    }
-}
-
-void GraphoScan::myGammaCorrection(cv::Mat& img, float fgamma)
-{
-  CV_Assert(img.data);
-
-  //accept only uchar type
-  CV_Assert(img.depth() != sizeof(uchar));
-
-  MatIterator_<uchar> it, end;
-  for (it = img.begin<uchar>(), end = img.end<uchar>(); it != end; it++)
-    {
-      *it = lut[(*it)];
-    }
-}
-
 // selectionne un quadrilatère pour possiblement ne travailler à l'intérieur de celui ci
 void GraphoScan::mySelectBg(const char * fileName_video, const char * fileName_pt_bg){
   cv::namedWindow(name_window);
@@ -101,7 +71,6 @@ void GraphoScan::mySelectBg(const char * fileName_video, const char * fileName_p
   insertPoints(vect, 20);
   //sauvegarde vect dans un fichier
   saveTrajectoire(vect, fileName_pt_bg);
-
 
 }
 
@@ -373,308 +342,6 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
   std::cout << "le temps de calcul est : " << tempsCalc << endl;
 }
 
-void GraphoScan::myTrackerMatchTemplate(const char * filename, bool isTransPerspective, bool ifUpdateTemplate)
-{
-  //si enregistrer le video
-  std::cout << "Save video? [y/n]: ";
-  cin >> saveVideo;
-  if ((saveVideo == 'y') || (saveVideo == 'Y'))
-    {
-      init_VideoWritter();
-    }
-
-  VideoCapture cap;
-  cap.open(filename);
-
-  //my webCam
-  //cap.open(0);
-
-  if (!cap.isOpened())
-    {
-      std::cout << "Cannot open the webcam." << endl;
-      exit(1);
-    }
-
-  int nFrame = cap.get(CAP_PROP_FRAME_COUNT);
-  //si sauter des frames?
-  char skipFrame;
-  std::cout << "if skip frames? [y/n]: ";
-  cin >> skipFrame;
-  int nFrameStart = 0;
-  int nFrameEnd = nFrame;
-  if ((skipFrame == 'y') || (skipFrame == 'Y'))
-    {
-      while (true)
-	{
-	  std::cout << "start from:";
-	  string str;
-	  cin >> str;
-	  nFrameStart = stoi(str);
-	  if (nFrameStart < 0)
-	    {
-	      cout << "<error> the number of the frame should be positive." << endl;
-	      continue;
-	    }
-	  else
-	    {
-	      cap.set(CV_CAP_PROP_POS_FRAMES, nFrameStart);
-	      std::cout << "strat from " << nFrameStart << " frame" << endl;
-	      break;
-	    }
-	}
-      while (true)
-	{
-	  std::cout << "end at: ";
-	  string str;
-	  cin >> str;
-	  nFrameEnd = stoi(str);
-	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
-	    {
-	      std::cout << "nFrame = " << nFrame << endl;
-	      std::cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
-	      continue;
-	    }
-	  else
-	    {
-	      std::cout << "end at " << nFrameEnd << endl;
-	      break;
-	    }
-	}
-    }
-
-  cap.read(imgSrc);
-
-  //verifier si l'image est vide ou pas
-  if (imgSrc.empty())
-    {
-      std::cout << "The frame is empty." << endl;
-      waitKey();
-      exit(1);
-    }
-
-  //before removing the distortion
-  //cv::imshow("imgSrc_bf", imgSrc);
-
-  //remove the distortion
-  //cameraCalibrator.rectifyMap(imgSrc, imgSrc); 
-
-  if (isTransPerspective == false)
-    {
-      imgRoi = imgSrc;
-    }
-  else
-    {
-      //transformee perspective
-      imgRoi = transformPerspective(imgSrc);
-    }
-
-  //cv::namedWindow("ROI");
-
-  //choisir la ROI
-  Rect2d box = selectROI("selectRoi", imgRoi, true, true);
-
-  //limiter la taille du rectangle de la ROI
-  if (box.width < MIN_RECT_WIDTH)
-    {
-      box.x += box.width * 0.5;
-      box.width = MIN_RECT_WIDTH;
-      box.x -= MIN_RECT_WIDTH* 0.5;
-    }
-  if (box.height < MIN_RECT_HEIGHT)
-    {
-      box.y += box.height* 0.5;
-      box.height = MIN_RECT_HEIGHT;
-      box.y -= MIN_RECT_HEIGHT * 0.5;
-    }
-
-  //boundary protection
-  box &= Rect2d(0, 0, imgRoi.cols, imgRoi.rows);
-
-  //quit if ROI was not selected
-  if (box.width == 0 || box.height == 0)
-    {
-      cout << "error: no box was seleted." << endl;
-      exit(1);
-    }
-
-  cv::Mat imgGray;
-  cv::cvtColor(imgRoi, imgGray, CV_BGR2GRAY);
-
-  cv::Mat model = imgGray(box);
-
-  //initialiser le matrix pour enregistrer la trajectoire
-  cv::Mat imgBin, imgDst;
-  imgTrajectoire = cv::Mat::zeros(imgRoi.size(), imgRoi.type());
-  imgTrajectoire_cor = imgTrajectoire.clone();
-
-  int frameCount = 0;
-  for (; nFrameStart + frameCount < nFrameEnd;)
-    {
-      double t = (double)getTickCount();
-
-      cap.read(imgSrc);
-
-      //remove the distortion
-      //cameraCalibrator.rectifyMap(imgSrc, imgSrc);
-
-      //verifier si l'image est vide
-      if (imgSrc.empty())
-	{
-	  std::cout << "The frame is empty." << endl;
-	  break;
-	}
-
-      t = (double)cvGetTickCount() - t;
-      std::cout << "cost time(convert):" << t / ((double)getTickFrequency()*1000.f) << endl;
-
-      //very slow
-      //myGammaCorrection(imgGray, 0.5);
-
-      //MatIterator_<uchar> it, end;
-      //for (it = imgGray.begin<uchar>(), end = imgGray.end<uchar>(); it != end; it++)
-      //{
-      //	*it = lut[(*it)];
-      //}
-
-      if (isTransPerspective == false)
-	{
-	  imgRoi = imgSrc;
-	}
-      else
-	{
-	  //transformee perspective
-	  cv::warpPerspective(imgSrc, imgRoi, M, frameSize);
-	}
-
-      t = (double)cvGetTickCount() - t;
-      std::cout << "cost time(calculation):" << t / ((double)getTickFrequency()*1000.f) << endl;
-
-      //tracker 
-      myMatchTemplate(imgRoi, model, box, ifUpdateTemplate);
-
-      cv::Point2f ptCenter = cv::Point2f(box.x + box.width*0.5, box.y + box.height*0.5);
-
-      //d¨¦ssiner le trajectoire du point que l'on suit
-      cv::circle(imgTrajectoire, ptCenter, 0, Scalar(0, 255, 255), 2);
-
-      //enregistrement des points
-      ptsObjet.push_back(ptCenter);
-
-      cv::Mat imgSuivi = Mat::zeros(imgRoi.size(), imgRoi.type());
-
-      cv::rectangle(imgSuivi, box, Scalar(0, 0, 255), 2);
-      cv::circle(imgSuivi, ptCenter, 0, Scalar(0, 255, 255), 2);
-
-      // cv::imshow("ROI", imgRoi + imgSuivi);
-      //cv::imshow("Trajectoire", imgTrajectoire);
-      //cv::imshow("Src", imgSrc + temp);
-
-      //enregistrer deux images dans une seule fen¨ºtre
-      cv::Mat imgAll = cv::Mat(imgRoi.rows, imgRoi.cols * 2, imgRoi.type());
-      cv::Mat imgTmp = imgRoi.clone() + imgSuivi.clone();
-      imgTmp.copyTo(imgAll(Rect(0, 0, imgRoi.cols, imgRoi.rows)));
-      imgTrajectoire.copyTo(imgAll(Rect(imgRoi.cols, 0, imgRoi.cols, imgRoi.rows)));
-
-      cv::imshow("imgAll", imgAll);
-
-      if ((saveVideo == 'y') || (saveVideo == 'Y'))
-	//stocker les vid¨¦os
-	{
-	  outputVideo1.write(imgTrajectoire);
-	  outputVideo2.write(imgRoi + imgSuivi);
-	  outputVideo3.write(imgAll);
-	}
-
-      std::cout << "frameCount: " << frameCount++ << endl;
-
-      t = (double)cvGetTickCount() - t;
-      std::cout << "cost time(show images):" << t / ((double)getTickFrequency()*1000.f) << endl;
-
-      if (waitKey(1) == 27)
-	break;
-    }
-
-}
-
-void GraphoScan::myMatchTemplate(cv::Mat & imgSrc, cv::Mat & model, Rect2d & trackBox, bool ifUpdateTemplate)
-{	//tracker: get search patches around the last tracking box,
-	//and find the most similar one
-
-  cv::Mat imgGray;
-
-  cv::cvtColor(imgSrc, imgGray, CV_RGB2GRAY);
-
-#ifdef GAMMA
-  //gamma correction
-  myGammaCorrection(imgGray, 0.5);
-  //cv::imshow("imgGray", imgGray);
-#endif // GAMMA
-
-  Rect searchBox;
-  searchBox.width = 3 * trackBox.width;
-  searchBox.height = 3 * trackBox.height;
-  searchBox.x = trackBox.x + trackBox.width * 0.5 - searchBox.width * 0.5;
-  searchBox.y = trackBox.y + trackBox.height * 0.5 - searchBox.height * 0.5;
-
-  //boundary protection
-  searchBox &= Rect(0, 0, imgSrc.cols, imgSrc.rows);
-
-  cv::Mat similarity;
-  matchTemplate(imgGray(searchBox), model, similarity, CV_TM_CCOEFF_NORMED);
-  //CV_TM_SQDIFF 
-  //CV_TM_SQDIFF_NORMED
-  //CV_TM_CCORR 
-  //CV_TM_CCORR_NORMED 
-  //CV_TM_CCOEFF 
-  //CV_TM_CCOEFF_NORMED
-
-  //binaire
-  cv::Mat imgDst = imgSrc.clone();
-  cv::cvtColor(imgDst, imgDst, CV_RGB2GRAY);
-
-
-  //cv::adaptiveThreshold(imgDst, imgDst, 255, ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 7, 2);
-  //cv::threshold(imgDst, imgDst, 128, 256, CV_THRESH_OTSU | CV_THRESH_BINARY);
-  //
-  //cv::namedWindow("imgContour");
-  //createTrackbar("Threshold_L", "imgContour", &threshold_L, 1000);
-  //createTrackbar("Threshold_H", "imgContour", &threshold_H, 1000);
-  //cv::imshow("imgDst", imgDst);
-
-  //vector<vector<Point>> all_contours;
-  //vector<vector<Point>> contours;
-  //contours.clear();
-
-  //cv::findContours(imgDst, all_contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
-  //for (int i = 0; i < all_contours.size(); i++)
-  //{
-  //	if ((all_contours[i].size() > threshold_L) && (all_contours[i].size() < threshold_H))
-  //	{
-  //		contours.push_back( all_contours[i]);
-  //	}
-  //}
-
-  //cv::Mat imgContour = cv::Mat::zeros(imgSrc.size(), imgSrc.type());
-  //cv::drawContours(imgContour, contours, -1, Scalar(0, 255, 0), 1);
-  //cv::imshow("imgContour", imgContour);
-
-  double mag_r;
-  Point point;
-
-  //cv::imshow("similarity", similarity);
-  //find the minmun and maximum element values and their positions,
-  //which would be the features.
-  minMaxLoc(similarity, 0, &mag_r, 0, &point);
-
-  //update the trackBox
-  trackBox.x = point.x + searchBox.x;
-  trackBox.y = point.y + searchBox.y;
-
-  //update the model
-  //model = imgGray(trackBox);
-}
-
-//B
 void GraphoScan::saveTrajectoire(const char* filename = "objectsPoints.txt")
 {
   ofstream fout;
@@ -833,14 +500,15 @@ void GraphoScan::showImgTrackAndHog(string imgTrack, string imgHog){
     cout << "Could not open or find the tracking and/or hog image" << endl;
     return;
   }
-  while(true){
+  bool exit = false;
+  while(!exit){
     cv::Mat imgAll = cv::Mat(imageTrack.rows, imageTrack.cols * 2, imageTrack.type());
     imageTrack.copyTo(imgAll(Rect(0, 0, imageTrack.cols, imageTrack.rows)));
     imageHOG.copyTo(imgAll(Rect(imageTrack.cols, 0, imageHOG.cols, imageHOG.rows)));
     cv::imshow(window_track_hog, imgAll);
     if(cv::waitKey(1)==27){
       cv::destroyWindow(window_track_hog);
-      break;
+      exit = true;
     }
     
   }
@@ -884,13 +552,7 @@ cv::Mat GraphoScan::getImgTrajectoire_Cor(vector<Point2f> ptsObjet)
   return imgTmp;
 }
 
-cv::Mat GraphoScan::transformPerspective(const cv::Mat & imgSrc)
-{
-  //before removing the distortion
-  //cv::imshow("imgSrc_bf", imgSrc);
-
-  //remove the distortion
-  //cameraCalibrator.rectifyMap(imgSrc, imgSrc); 
+cv::Mat GraphoScan::transformPerspective(const cv::Mat & imgSrc) {
   cv::namedWindow("Src");
   cv::setMouseCallback("Src", mouseSelectPoint);
 
@@ -960,33 +622,7 @@ cv::Mat GraphoScan::transformPerspective(const cv::Mat & imgSrc)
 }
 
 
-//
-void GraphoScan::readImages(const char* filename_imgPtsObjet,const char* filename_imgTrajectoire_cor)
-{
-  imgPtsObjet = cv::imread(filename_imgPtsObjet, CV_LOAD_IMAGE_GRAYSCALE);
-  if (imgPtsObjet.empty())
-    {
-      std::cout << "Cannot open imgPtsObjet.jpg." << endl;
-    }
-  imgTrajectoire_cor = cv::imread(filename_imgTrajectoire_cor, CV_LOAD_IMAGE_GRAYSCALE);
-  if (imgTrajectoire_cor.empty())
-    {
-      std::cout << "Cannot open imgTrajectoire_cor.jpg." << endl;
-    }
 
-  std::cout << "imgPtsObjet.type()" << imgPtsObjet.type() << endl;
-  std::cout << "imgTrajectoire_cor.type()" << imgTrajectoire_cor.type() << endl;
-
-  //cv::imshow("imgPtsObjet", imgPtsObjet);
-  //cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
-
-  if ((imgPtsObjet.rows != imgTrajectoire_cor.rows) && (imgPtsObjet.cols&&imgTrajectoire_cor.cols))
-    {
-      std::cout << "the size is different." << endl;
-      exit(1);
-    }
-
-}
 //
 void GraphoScan::readTracjectoire(const char* filename)
 {
@@ -1010,154 +646,9 @@ void GraphoScan::readTracjectoire(const char* filename)
     }
 }
 
-//D
-void GraphoScan::drawTrack()
-{
-  //find the overlapping point and set the value to 255
-  cv::Mat imgDst = findPoints();
-
-  //remove the points from the trajective curve
-  cv::Mat imgPur = nettoyageImage(imgDst, ptsObjet, 20);
-
-  //cv::imshow("imgPur", imgPur);
-  cv::waitKey();
-}
-
-//D-1
-cv::Mat GraphoScan::findPoints()
-{
-  cv::threshold(imgPtsObjet, imgPtsObjet, 128, 255, THRESH_BINARY);
-  cv::threshold(imgTrajectoire_cor, imgTrajectoire_cor, 128, 255, THRESH_BINARY);
-
-  //find the overlapping point and set the value to 255
-  //imgDst: l'image apr¨¨s correg¨¦e
-  cv::Mat imgDst = cv::Mat::zeros(imgTrajectoire_cor.size(), imgTrajectoire_cor.type());
-  int count1_0 = 0, count1_255 = 0, count2_0 = 0, count2_255 = 0, count = 0;
-  for (size_t i = 0; i < imgTrajectoire_cor.rows; i++)
-    {
-      for (size_t j = 0; j < imgTrajectoire_cor.cols; j++)
-	{
-	  if (imgPtsObjet.at<uchar>(i, j) == 255)
-	    {
-	      count1_255++;
-	    }
-	  else if (imgPtsObjet.at<uchar>(i, j) == 0)
-	    {
-	      count1_0++;
-	    }
-	  else
-	    {
-	      std::cout << "imgPtsObjet.at<uchar>(" << i << ", " << j << ") = " << (int)imgPtsObjet.at<uchar>(i, j) << endl;
-	    }
-
-	  if (imgTrajectoire_cor.at<uchar>(i, j) == 255)
-	    {
-	      count2_255++;
-	    }
-	  else if (imgTrajectoire_cor.at<uchar>(i, j) == 0)
-	    {
-	      count2_0++;
-	    }
-	  else
-	    {
-	      std::cout << "imgTrajectoire_cor.at<uchar>(" << i << ", " << j << ") = " << (int)imgTrajectoire_cor.at<uchar>(i, j) << endl;
-	    }
-
-	  if ((imgPtsObjet.at<uchar>(i, j) == 255) && (imgTrajectoire_cor.at<uchar>(i, j) == 255))
-	    {
-	      //std::cout << "imgPtsObjet.at<uchar>(" << i << ", " << j << ") = " << (int)imgPtsObjet.at<uchar>(i, j) << endl;
-	      //std::cout << "imgTrajectoire_cor.at<uchar>(" << i << ", " << j << ") = " << (int)imgTrajectoire_cor.at<uchar>(i, j) << endl;
-
-	      imgDst.at<uchar>(i, j) = 255;
-	      count++;
-	    }
-	}
-    }
-
-  //dilate(imgDst, imgDst, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
-
-  std::cout << "count1_0 = " << count1_0 << endl;
-  std::cout << "count1_255 = " << count1_255 << endl;
-  std::cout << "count2_0 = " << count2_0 << endl;
-  std::cout << "count2_255 = " << count2_255 << endl;
-  std::cout << "count = " << count << endl;
-
-  //cv::imshow("imgDst", imgDst);
-  //cv::imshow("imgPtsObjet", imgPtsObjet);
-  //cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
-
-  return imgDst;
-}
-
 vector<Point2f> GraphoScan::getPtsTrajectoire()
 {
   return ptsObjet;
-}
-
-//D-2
-cv::Mat GraphoScan::nettoyageImage(const cv::Mat& imgDst, vector<Point2f> ptsObjet, int eps)
-{
-  vector<Point2f> vectTmp;
-  vectTmp.clear();
-  for (size_t i = 0; i < ptsObjet.size(); i++)
-    {
-      if ((ptsObjet[i].x > imgDst.cols - 1) 
-	  || (ptsObjet[i].x < 1)	
-	  || (ptsObjet[i].y > imgDst.rows - 1) 
-	  || (ptsObjet[i].y < 1))
-	{
-	  std::cout << "ptsObjet[" << i << "] depasse les limites." << endl;
-	  continue;
-	}
-      else
-	{
-	  std::cout << "imgDst.rows: " << imgDst.rows << endl;
-	  std::cout << "imgDst.cols: " << imgDst.cols << endl;
-
-	  std::cout << "imgDst.size.p[0]: " << imgDst.size.p[0] << endl;
-	  std::cout << "ptsObjet[" << i << "] :";
-	  std::cout << "x: " << ptsObjet[i].x << endl;
-	  std::cout << "y: " << ptsObjet[i].y << endl;
-	  if (imgDst.at<uchar>(ptsObjet[i]) == 255)
-	    {
-	      vectTmp.push_back(ptsObjet[i]);
-	    }
-	}
-    }
-
-  cv::Mat imgDst_2 = cv::Mat::zeros(imgDst.size(), CV_32FC3);
-  for (int i = 0; i < vectTmp.size(); i++)
-    {
-      cv::circle(imgDst_2, vectTmp[i], 1, Scalar(0, 255, 255));
-    }
-  cv::imshow("imgDst_2", imgDst_2);
-
-  int vectSize = vectTmp.size();
-  cv::namedWindow("imgDst_3");
-  cv::createTrackbar("eps", "imgDst_3", &eps, 100);
-  cv::createTrackbar("vectSize", "imgDst_3", &vectSize, vectTmp.size());
-
-  while (true)
-    {
-      cv::Mat imgDst_3 = cv::Mat::zeros(imgDst.size(), CV_32FC3);
-      for (int i = 0; i < vectSize - 1; i++)
-	{
-	  Point2f v1 = vectTmp[i] - vectTmp[i + 1];
-	  double dd = sqrt(v1.x*v1.x + v1.y*v1.y);
-	  if (dd < (double)eps)
-	    line(imgDst_3, vectTmp[i], vectTmp[i + 1], Scalar(0, 255, 0));
-	}
-
-      cv::imshow("imgDst_3", imgDst_3);
-      if (waitKey(1) == 27)
-	{
-	  //traitement d'images
-	  cv::cvtColor(imgDst_3, imgDst_3, CV_BGR2GRAY);
-	  cv::dilate(imgDst_3, imgDst_3, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)));
-	  cv::imshow("imgDst_3", imgDst_3);
-	  return imgDst_3;
-	}
-    }
 }
 
 void GraphoScan::calAndSavePointsOf3D(Size sizeImg, const char* filename_left,
@@ -1429,4 +920,33 @@ void GraphoScan::insertPoints(vector<Point2f>& pts, int n)
 
     }
   pts = vect;
+}
+
+void GraphoScan::init_VideoWritter() {
+  std::cout << "Video will be saved" << endl;
+  outputVideo1.open(NAME_L, CV_FOURCC('X', 'V', 'I', 'D'), 10, frameSize, true);
+  if (!outputVideo1.isOpened()) {
+    std::cout << "could not open the output video1 for write" << endl;
+    return;
+  }
+
+  //problem here => outputVideo1 is bigger than outputVideo
+  outputVideo2.open(NAME_R, CV_FOURCC('X', 'V', 'I', 'D'), 10, frameSize, true);
+  if (!outputVideo2.isOpened()) {
+    std::cout << "could not open the output video2 for write" << endl;
+    return;
+  }
+
+  outputVideo3.open(NAME_ALL, CV_FOURCC('X', 'V', 'I', 'D'), 10, Size(frameSize.width * 2, frameSize.height), true);
+  if (!outputVideo3.isOpened()) {
+    std::cout << "could not open the output video3 for write" << endl;
+    return;
+  }
+}
+
+void GraphoScan::init() {
+  for (int i = 0; i < 256; i++) {
+    lut[i] = saturate_cast<uchar>(pow((float)(i / 255.0f), fgamma)*255.0f);
+  }
+  mRoi.clear();
 }
