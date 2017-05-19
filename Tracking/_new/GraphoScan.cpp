@@ -2,10 +2,8 @@
 #include <fstream>
 
 #include "HOG.hpp"
-
 #include "GraphoScan.hpp"
 
-using namespace cv;
 using namespace std;
 
 #define MIN_RECT_WIDTH 50
@@ -18,215 +16,175 @@ bool isFinished = false;
 int mNum = 4;
 string name_window="Tracking";
 
-// selectionne un quadrilatère pour possiblement ne travailler à l'intérieur de celui ci
-void GraphoScan::mySelectBg(const char * fileName_video, const char * fileName_pt_bg){
+void GraphoScan::mySelectBg(const char * fileName_video, const char * fileName_pt_bg) {
   cv::namedWindow(name_window);
   cv::setMouseCallback(name_window, mouseSelectPoint);
 
   VideoCapture cap(fileName_video);
   cap.read(imgSrc);
-  if (!cap.isOpened())
-    {
-      std::cout << "Cannot open the file: " << fileName_video << endl;
-      exit(1);
-    }
+  if (!cap.isOpened()) {
+    cout << "Cannot open the file: " << fileName_video << endl;
+    exit(1);
+  }
 
+  // initialize with matrix fill by 0
   cv::Mat temp = cv::Mat::zeros(imgSrc.size(), imgSrc.type());
 	
   vector<cv::Point2f> vect;
   vect.clear();
-  while (true)
-    {
-      for (int i = 0; i < roi.size(); i++)
-	{
-	  cv::circle(temp, roi[i], 2, Scalar(0, 255, 0), 2);
-	  if (i > 0)
-	    line(temp, roi[i - 1], roi[i], Scalar(0, 255, 255), 2);
-	}
-		
-      //isFinished est mis ¨¤ true quand les 4 points ont ¨¦t¨¦ selectionn¨¦s ¨¤ la souris
-      if (isFinished)
-	{
-	  line(temp, roi[roi.size() - 1], roi[0], Scalar(0, 255, 255), 2);
-
-	  //Sort the points in anti-clockwise
-	  Point2f v1 = roi[1] - roi[0];
-	  Point2f v2 = roi[2] - roi[0];
-
-	  if (v1.cross(v2) > 0)
-	    swap(roi[1], roi[3]);
-	  vect = roi;
-	  vect.push_back(roi[0]);
-	  break;
-	}
-
-      cv::imshow(name_window, imgSrc + temp);
-
-      if (waitKey(1) == 27){
-	cv::destroyWindow(name_window);
-	exit(1);
-      }
+  while (true) {
+    for (int i = 0; i < roi.size(); i++) {
+      cv::circle(temp, roi[i], 2, Scalar(0, 255, 0), 2);
+      if (i > 0)
+	line(temp, roi[i - 1], roi[i], Scalar(0, 255, 255), 2);
     }
-  //ajoute des points pour obtenir une zone carr¨¦e (maybe)
-  insertPoints(vect, 20);
-  //sauvegarde vect dans un fichier
-  saveTrajectoire(vect, fileName_pt_bg);
+		
+    // isFinished set true if the 4 points are set
+    if (isFinished) {
+      line(temp, roi[roi.size() - 1], roi[0], Scalar(0, 255, 255), 2);
 
-}
+      // Sort the points in anti-clockwise
+      Point2f v1 = roi[1] - roi[0];
+      Point2f v2 = roi[2] - roi[0];
 
-void mouseSelectPoint(int event, int x, int y, int flags, void* userData)
-{
-  switch (event)
-    {
-    case CV_EVENT_LBUTTONDOWN:
-      if (!isFinished)
-	{
-	  roi.push_back(Point2f(x, y));
-	  if (roi.size() >= mNum)
-	    isFinished = true;
-	}
-    default:
+      if (v1.cross(v2) > 0)
+	swap(roi[1], roi[3]);
+	  
+      vect = roi;
+      vect.push_back(roi[0]);
       break;
     }
+
+    cv::imshow(name_window, imgSrc + temp);
+
+    if (waitKey(1) == 27) {
+      cv::destroyWindow(name_window);
+      exit(1);
+    }
+  }
+  // if the selected zone is not square, add points to obtain perfect square
+  insertPoints(vect, 20);
+  
+  // save new bg
+  saveTrajectoire(vect, fileName_pt_bg);
 }
 
-//prend une video en entr¨¦e, applique dessus le tracking KCF
-//en sortie : - une video compos¨¦e de la video originale et du tracker
-//			  - les points correspondants au centre du tracker dans les frames successives
-//			  - une video compos¨¦e des 2 videos precedentes
-void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
-{
-  //si enregistrer le video
-  std::cout << "Save video? [y/n]: ";
-  cin >> saveVideo;
-  if ((saveVideo == 'y') || (saveVideo == 'Y'))
-    {
-      init_VideoWritter();
+void mouseSelectPoint(int event, int x, int y, int flags, void* userData) {
+  switch (event) {
+  case CV_EVENT_LBUTTONDOWN:
+    if (!isFinished) {
+      roi.push_back(Point2f(x, y));
+      if (roi.size() >= mNum)
+	isFinished = true;
     }
+  default: break;
+  }
+}
+
+void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective) {
+  // if you need to save the video
+  cout << "Save video? [y/n]: ";
+  cin >> saveVideo;
+  if ((saveVideo == 'y') || (saveVideo == 'Y')) {
+    init_VideoWritter();
+  }
 
   VideoCapture cap;
   cap.open(filename);
-
-  //my webCam
-  //cap.open(0);
-
-  if (!cap.isOpened())
-    {
-      std::cout << "Cannot open the webcam." << endl;
-      exit(1);
-    }
-  //nombre de frame de la video
+  
+  if (!cap.isOpened()) {
+    cout << "Cannot open the webcam." << endl;
+    exit(1);
+  }
+  
+  // number of frame in the video
   int nFrame = cap.get(CAP_PROP_FRAME_COUNT);
-  //si sauter des frames?
+  // if you need to skip frames to set start at the begin of writting
   char skipFrame;
-  std::cout << "if skip frames? [y/n]: ";
+  cout << "if skip frames? [y/n]: ";
   cin >> skipFrame;
   int nFrameStart = 0;
   int nFrameEnd = nFrame;
 	
-  //permet de commencer et de finir aux frames voulues
-  if ((skipFrame == 'y')|| (skipFrame == 'Y'))
-    {
-      while (true)
-	{
-	  std::cout << "start from:";
-	  string str;
-	  cin >> str;
-	  nFrameStart = stoi(str);
-	  if (nFrameStart < 0)
-	    {
-	      cout << "<error> the number of the frame should be positive." << endl;
-	      continue;
-	    }
-	  else
-	    {
-	      //set ajoute une propri¨¦t¨¦ ¨¤ la VideoCapture, ici la prochaine frame a ¨ºtre d¨¦cod¨¦e
-	      cap.set(CV_CAP_PROP_POS_FRAMES, nFrameStart);
-	      std::cout << "strat from " << nFrameStart << " frame" << endl;
-	      break;
-	    }
-	}
-      while (true)
-	{
-	  std::cout << "end at: ";
-	  string str;
-	  cin >> str;
-	  nFrameEnd = stoi(str);
-	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
-	    {
-	      std::cout << "nFrame = " << nFrame << endl;
-	      std::cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
-	      continue;
-	    }
-	  else
-	    {
-	      std::cout << "end at " << nFrameEnd << endl;
-	      break;
-	    }
-	}
+  // permit to begin and finish at the frames numbers set before
+  if ((skipFrame == 'y')|| (skipFrame == 'Y')) {
+    while (true) {
+      cout << "start from:";
+      string str;
+      cin >> str;
+      nFrameStart = stoi(str);
+      if (nFrameStart < 0) {
+	cout << "<error> the number of the frame should be positive." << endl;
+	continue;
+      } else {
+	// set proprety of start frame to the videocapture properties
+	cap.set(CV_CAP_PROP_POS_FRAMES, nFrameStart);
+	cout << "strat from " << nFrameStart << " frame" << endl;
+	break;
+      }
     }
-
+    while (true) {
+      cout << "end at: ";
+      string str;
+      cin >> str;
+      nFrameEnd = stoi(str);
+      if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame)) {
+	cout << "nFrame = " << nFrame << endl;
+	cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
+	continue;
+      } else {
+	cout << "end at " << nFrameEnd << endl;
+	break;
+      }
+    }
+  }
+  
   cap.read(imgSrc);
 
-  //verifier si l'image est vide ou pas
-  if (imgSrc.empty())
-    {
-      std::cout << "The frame is empty." << endl;
-      waitKey();
-      exit(1);
-    }
+  // verify if the picture is empty
+  if (imgSrc.empty()) {
+    cout << "The frame is empty." << endl;
+    waitKey();
+    exit(1);
+  } 
 
-  //before removing the distortion
-  //cv::imshow("imgSrc_bf", imgSrc);
-
-  //remove the distortion
-  //cameraCalibrator.rectifyMap(imgSrc, imgSrc); 
-
-  if (isTransPerspective == false)
-    {
-      imgRoi = imgSrc;
-    }
-  else
-    {
-      //transformee perspective
-      imgRoi = transformPerspective(imgSrc);
-    }
-
-  //cv::namedWindow("ROI");
-  //choisir la ROI
-  //selectROI(windowName,img,showCrossair,fromCenter)
+  if (isTransPerspective == false) {
+    imgRoi = imgSrc;
+  } else {
+    // transformee perspective
+    imgRoi = transformPerspective(imgSrc);
+  }
+  
   Rect2d box = selectROI("selectRoi", imgRoi, true, true);
   cv::destroyWindow("selectRoi");
-  //limiter la taille du rectangle de la ROI
-  if (box.width < MIN_RECT_WIDTH)
-    {
-      box.x += box.width * 0.5;
-      box.width = MIN_RECT_WIDTH;
-      box.x -= MIN_RECT_WIDTH* 0.5;
-    }
-  if (box.height < MIN_RECT_HEIGHT)
-    {
-      box.y += box.height* 0.5;
-      box.height = MIN_RECT_HEIGHT;
-      box.y -= MIN_RECT_HEIGHT * 0.5;
-    }
+  
+  // limit the roi size
+  if (box.width < MIN_RECT_WIDTH) {
+    box.x += box.width * 0.5;
+    box.width = MIN_RECT_WIDTH;
+    box.x -= MIN_RECT_WIDTH* 0.5;
+  }
+  if (box.height < MIN_RECT_HEIGHT) {
+    box.y += box.height* 0.5;
+    box.height = MIN_RECT_HEIGHT;
+    box.y -= MIN_RECT_HEIGHT * 0.5;
+  }
 
-  //boundary protection
+  // boundary protection
   box &= Rect2d(0, 0, imgRoi.cols, imgRoi.rows);
 
-  //quit if ROI was not selected
-  if (box.width == 0 || box.height == 0)
-    {
-      cout << "error: no box was seleted." << endl;
-      exit(1);
-    }
+  // quit if ROI was not selected
+  if (box.width == 0 || box.height == 0) {
+    cout << "error: no box was seleted." << endl;
+    exit(1);
+  }
 
-  //create a tracker 'KCF'
+  // create a tracker with algoname in parameter
   Ptr<Tracker> tracker = Tracker::create("KCF");
 
   tracker->init(imgRoi, box);
 
-  //initialiser le matrix pour enregistrer la trajectoire
+  //initialize matrix to record tracker trajectory
   cv::Mat imgBin, imgDst;
   imgTrajectoire = cv::Mat::zeros(imgRoi.size(), imgRoi.type());
   imgTrajectoire_cor = imgTrajectoire.clone();
@@ -236,164 +194,121 @@ void GraphoScan::myTrackerKCF(const char* filename, bool isTransPerspective)
   
   int frameCount = 0;
   double tempsCalc = (double)getTickCount();
-  for (;nFrameStart + frameCount < nFrameEnd;)
-    {
-      if(cv::waitKey(1)==27){
-	cv::setWindowProperty(name_window,CV_WND_PROP_FULLSCREEN,CV_WINDOW_NORMAL);
-      }
-      
-      double t = (double)getTickCount();
-
-      cap.read(imgSrc);
-
-      //remove the distortion
-      //cameraCalibrator.rectifyMap(imgSrc, imgSrc);
-
-      //verifier si l'image est vide
-      if (imgSrc.empty())
-	{
-	  std::cout << "The frame is empty." << endl;
-	  break;
-	}
-
-      t = (double)cvGetTickCount() - t;
-      std::cout << "cost time(convert):" << t / ((double)getTickFrequency()*1000.f) << endl;
-
-      //very slow
-      //myGammaCorrection(imgGray, 0.5);
-
-      //MatIterator_<uchar> it, end;
-      //for (it = imgGray.begin<uchar>(), end = imgGray.end<uchar>(); it != end; it++)
-      //{
-      //	*it = lut[(*it)];
-      //}
-
-      if (isTransPerspective == false)
-	{
-	  imgRoi = imgSrc;
-	}
-      else
-	{
-	  //transformee perspective
-	  cv::warpPerspective(imgSrc, imgRoi, M, frameSize);
-	}
-		
-      /*
-	ptCenter = centre de la roi
-	Les 3 vid¨¦os:
-	- imgTrajectoire = les points au centre de la ROI
-	- imgSuivi = le rectangle de la ROI
-	- imgSrc = video originale avec le temps pass¨¦
-		
-		
-      */
-		
-      t = (double)cvGetTickCount() - t;
-      std::cout << "cost time(calculation):" << t / ((double)getTickFrequency()*1000.f) << endl;
-
-      //trackingKCF
-      tracker->update(imgRoi, box);
-
-      cv::Point2f ptCenter = cv::Point2f(box.x + box.width*0.5, box.y + box.height*0.5);
-      //d¨¦ssiner le trajectoire du point que l'on suit
-      cv::circle(imgTrajectoire, ptCenter, 0, Scalar(0, 255, 255), 2);
-
-      //enregistrement des points
-      ptsObjet.push_back(ptCenter);
-
-      cv::Mat imgSuivi = Mat::zeros(imgRoi.size(), imgRoi.type());
-
-      cv::rectangle(imgSuivi, box, Scalar(0, 0, 255), 2);
-      cv::circle(imgSuivi, ptCenter, 0, Scalar(0, 255, 255), 2);
-      
-      //cv::imshow("ROI", imgRoi + imgSuivi);
-      //cv::imshow("Trajectoire", imgTrajectoire);
-      //cv::imshow("Src", imgSrc + temp);
-
-      //enregistrer deux images dans une seule fen¨ºtre
-		
-      // fenetre de taille de 2 vid¨¦os
-      cv::Mat imgAll = cv::Mat(imgRoi.rows, imgRoi.cols * 2, imgRoi.type());
-      // image de la roi surimprim¨¦e sur l'image de base
-      cv::Mat imgTmp = imgRoi.clone() + imgSuivi.clone();
-      //copie imgTmp dans la 1ere moiti¨¦ d'imgAll
-      imgTmp.copyTo(imgAll(Rect(0, 0, imgRoi.cols, imgRoi.rows)));
-      //copie imgTrajectoire dans la 2eme moitie d'imgAll
-      imgTrajectoire.copyTo(imgAll(Rect(imgRoi.cols, 0, imgRoi.cols, imgRoi.rows)));
-
-      cv::imshow(name_window, imgAll);
-      
-      if ((saveVideo == 'y') || (saveVideo == 'Y'))
-	//stocker les vid¨¦os
-	{
-	  outputVideo1.write(imgTrajectoire);
-	  outputVideo2.write(imgRoi + imgSuivi);
-	  outputVideo3.write(imgAll);
-	}
-
-      std::cout << "frameCount: " << frameCount++ << endl;
-
-      t = (double)cvGetTickCount() - t;
-      std::cout << "cost time(show images):" << t / ((double)getTickFrequency()*1000.f) << endl;
-
+  
+  while (nFrameStart + frameCount < nFrameEnd) {
+    if(cv::waitKey(1)==27) {
+      cv::setWindowProperty(name_window,CV_WND_PROP_FULLSCREEN,CV_WINDOW_NORMAL);
     }
+      
+    double t = (double)getTickCount();
+
+    cap.read(imgSrc);
+
+    if (imgSrc.empty()) {
+      cout << "The frame is empty." << endl;
+      break;
+    }
+
+    t = (double)cvGetTickCount() - t;
+    cout << "cost time(convert):" << t / ((double)getTickFrequency()*1000.f) << endl;
+
+    if (isTransPerspective == false) {
+      imgRoi = imgSrc;
+    } else {
+      // transformee perspective
+      cv::warpPerspective(imgSrc, imgRoi, M, frameSize);
+    }
+		
+    t = (double)cvGetTickCount() - t;
+    std::cout << "cost time(calculation):" << t / ((double)getTickFrequency()*1000.f) << endl;
+
+    // tracking
+    tracker->update(imgRoi, box);
+
+    cv::Point2f ptCenter = cv::Point2f(box.x + box.width*0.5, box.y + box.height*0.5);
+    // draw trajectory of the following point
+    cv::circle(imgTrajectoire, ptCenter, 0, Scalar(0, 255, 255), 2);
+
+    // save points
+    ptsObjet.push_back(ptCenter);
+
+    cv::Mat imgSuivi = Mat::zeros(imgRoi.size(), imgRoi.type());
+
+    cv::rectangle(imgSuivi, box, Scalar(0, 0, 255), 2);
+    cv::circle(imgSuivi, ptCenter, 0, Scalar(0, 255, 255), 2);
+
+    //record two pictures in only one window
+		
+    // window size 2 for two picutres
+    cv::Mat imgAll = cv::Mat(imgRoi.rows, imgRoi.cols * 2, imgRoi.type());
+    
+    // roi picture delete on default picture
+    cv::Mat imgTmp = imgRoi.clone() + imgSuivi.clone();
+    
+    // copy imgTmpto the first part of window
+    imgTmp.copyTo(imgAll(Rect(0, 0, imgRoi.cols, imgRoi.rows)));
+    
+    // copy imgTrajectoire the first part of window
+    imgTrajectoire.copyTo(imgAll(Rect(imgRoi.cols, 0, imgRoi.cols, imgRoi.rows)));
+
+    cv::imshow(name_window, imgAll);
+      
+    if ((saveVideo == 'y') || (saveVideo == 'Y')) {
+	
+      // save videos
+      outputVideo1.write(imgTrajectoire);
+      outputVideo2.write(imgRoi + imgSuivi);
+      outputVideo3.write(imgAll);
+    }
+      
+    cout << "frameCount: " << frameCount++ << endl;
+
+    t = (double)cvGetTickCount() - t;
+    cout << "cost time(show images):" << t / ((double)getTickFrequency()*1000.f) << endl;
+
+  }
   cv::destroyWindow(name_window);
   tempsCalc -= (double)getTickCount();
-  std::cout << "le temps de calcul est : " << tempsCalc << endl;
+  cout << "The calculation has duration equals to : " << tempsCalc << endl;
 }
 
-void GraphoScan::saveTrajectoire(const char* filename = "objectsPoints.txt")
-{
+void GraphoScan::saveTrajectoire(const char* filename = "objectsPoints.txt") {
   ofstream fout;
   fout.open(filename);
-  if (!fout.is_open())
-    {
-      std::cout << "Cannot create the file " << filename << "." << endl;
-
+  if (!fout.is_open()) {
+    cout << "Cannot create the file " << filename << "." << endl;
+  } else {
+    fout.clear();
+    for (int i = 0; i < ptsObjet.size(); i++) {
+      fout << ptsObjet[i].x << " " << ptsObjet[i].y << endl;
     }
-  else
-    {
-      fout.clear();
-      for (int i = 0; i < ptsObjet.size(); i++)
-	{
-	  fout << ptsObjet[i].x << " " << ptsObjet[i].y << endl;
-	}
-    }
+  }
 }
 
-void GraphoScan::saveTrajectoire(vector<cv::Point2f> pts, const char * filenName)
-{
+void GraphoScan::saveTrajectoire(vector<cv::Point2f> pts, const char * filenName) {
   ofstream fout;
   fout.open(filenName);
-  if (!fout.is_open())
-    {
-      std::cout << "Cannot create the file " << filenName << "." << endl;
-
+  if (!fout.is_open()) {
+    cout << "Cannot create the file " << filenName << "." << endl;
+  } else {
+    fout.clear();
+    for (int i = 0; i < pts.size(); i++) {
+      fout << pts[i].x << " " << pts[i].y << endl;
     }
-  else
-    {
-      fout.clear();
-      for (int i = 0; i < pts.size(); i++)
-	{
-	  fout << pts[i].x << " " << pts[i].y << endl;
-	}
-    }
+  }
 }
 
-//C
-void GraphoScan::calcImgPtsAndImgTrack()
-{
+void GraphoScan::calcImgPtsAndImgTrack() {
+  
   string window_hog = "HOG";
+  
 #ifdef MYHOG
-  //transforme l'image d'imgTrajectoire_cor :
-  //les points sont reli¨¦s et mis en noirs et blancs
+  
+  //work on imgTrajectoire and set color to black and white
   imgTrajectoire_cor = getImgTrajectoire_Cor(ptsObjet);
-  //  cv::imshow("imgTrajectoire_cor", imgTrajectoire_cor);
 	
-  //utiliser la caracteristique de Hog
   MyHog hog;
   hog.computeGradient(imgRoi);
-  //cv::imshow("Mag[0]", hog.Mag[0]);
 
   cv::Mat imgMag = hog.Mag[0].clone();
   int size = 3;
@@ -401,92 +316,30 @@ void GraphoScan::calcImgPtsAndImgTrack()
   cv::Mat kernel_Ero = getStructuringElement(MORPH_ELLIPSE, Size(size, size));
   cv::Mat kernel_Dil = kernel_Ero;
 
-  //erode(imgMag, imgMag, kernel_Ero);
   cv::dilate(imgMag, imgMag, kernel_Dil);
 
-  //parce que le type de cet image n'est pas correspondant ¨¤ l'enregirement, il faut la transformation.
-  std::cout << "type of imgTrajectoire_cor: " << imgTrajectoire_cor.type() << endl;
-  std::cout << "type of imgPtsObjet: " << imgPtsObjet.type() << endl;
-  std::cout << "type of imgMag: " << imgMag.type() << endl;
+  cout << "type of imgTrajectoire_cor: " << imgTrajectoire_cor.type() << endl;
+  cout << "type of imgPtsObjet: " << imgPtsObjet.type() << endl;
+  cout << "type of imgMag: " << imgMag.type() << endl;
 
-  /*
-  cv::namedWindow(window_hog);
-
-  int C = 1;
-  int beta = 8;
-  int alpha = 0;
-  cv::createTrackbar("Constant", window_hog, &C, 50);
-  cv::createTrackbar("Beta", window_hog, &beta, 10);
-  cv::createTrackbar("Alpha", window_hog, &alpha, 50);
-  while (true)
-    {
-      //cv::Mat mask = cv::Mat(imgMag.size(), CV_8UC1).setTo(-128);
-      //cv::normalize(imgMag, imgMag, 255, 0, NORM_INF, -1, mask);
-
-      //C = 1, beta = 5, or C = 2, beta = 10; alpha = 0
-      // CV_8UC1 = uchar
-      imgMag.convertTo(imgPtsObjet, CV_8UC1, (double)beta, (double)alpha);
-      //cv::adaptiveThreshold(imgPtsObjet, imgPtsObjet, 255, ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY_INV, 5, C);
-
-      //C = 1, beta = 8, alpha = 0, 	imgMag.convertTo(imgTmp, CV_8UC1, (double)beta, (double)alpha);
-      cv::threshold(imgPtsObjet, imgPtsObjet, C, 256, THRESH_BINARY);
-
-      cv::dilate(imgPtsObjet, imgPtsObjet, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
-      //erode(imgPtsObjet, imgPtsObjet, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
-
-      // cv::imshow(window_hog, imgPtsObjet);
-
-      if (waitKey(1) == 27)
-	{
-	  cv::destroyWindow(window_hog);
-	break;
-	}
-	}*/
 #else
   
   cv::Mat imgBin;
   cvtColor(imgRoi, imgBin, CV_BGR2GRAY);
 
   threshold(imgBin, imgBin, 128, 256, CV_THRESH_BINARY_INV);
-  //cv::adaptiveThreshold(imgMag, imgMag, 255, ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY_INV, 5, 2);
-
-  //cv::imshow("imgBin", imgBin);
-
+  
   int size = 3;
   cv::Mat kernel_Ero = getStructuringElement(MORPH_ELLIPSE, Size(size, size));
   cv::Mat kernel_Dil = kernel_Ero;
 
-  //erode(imgMag, imgMag, kernel_Ero);
   cv::dilate(imgBin, imgPtsObjet, kernel_Dil);
 
-  //parce que le type de cet image n'est pas correspondant ¨¤ l'enregirement, il faut la transformation.
-  std::cout << "type of imgTrajectoire_cor: " << imgTrajectoire_cor.type() << endl;
-  std::cout << "type of imgPtsObjet: " << imgPtsObjet.type() << endl;
-  std::cout << "type of imgBin: " << imgPtsObjet.type() << endl;
-  /*
-  cv::namedWindow(window_hog);
-
-  int C = 1;
-  int beta = 8;
-  int alpha = 0;
-  cv::createTrackbar("Constant", window_hog, &C, 50);
-  cv::createTrackbar("Beta", window_hog, &beta, 10);
-  cv::createTrackbar("Alpha",window_hog , &alpha, 50);
-  while (true)
-    {
-
-       cv::imshow(window_hog, imgPtsObjet);
-
-      if (waitKey(1) == 27)
-	{
-	  cv::destroyWindow(window_hog);
-	  return;
-	}
-    }
-  */
-
+  cout << "type of imgTrajectoire_cor: " << imgTrajectoire_cor.type() << endl;
+  cout << "type of imgPtsObjet: " << imgPtsObjet.type() << endl;
+  cout << "type of imgBin: " << imgPtsObjet.type() << endl;
   
-#endif // MYHOG
+#endif
 }
 
 void GraphoScan::showImgTrackAndHog(string imgTrack, string imgHog){
@@ -496,16 +349,20 @@ void GraphoScan::showImgTrackAndHog(string imgTrack, string imgHog){
   
   Mat imageTrack = imread(imgTrack,CV_LOAD_IMAGE_COLOR);
   Mat imageHOG = imread(imgHog,CV_LOAD_IMAGE_COLOR);
+  
   if(!imageTrack.data || !imageHOG.data){
     cout << "Could not open or find the tracking and/or hog image" << endl;
     return;
   }
+  
   bool exit = false;
+  
   while(!exit){
     cv::Mat imgAll = cv::Mat(imageTrack.rows, imageTrack.cols * 2, imageTrack.type());
     imageTrack.copyTo(imgAll(Rect(0, 0, imageTrack.cols, imageTrack.rows)));
     imageHOG.copyTo(imgAll(Rect(imageTrack.cols, 0, imageHOG.cols, imageHOG.rows)));
     cv::imshow(window_track_hog, imgAll);
+    
     if(cv::waitKey(1)==27){
       cv::destroyWindow(window_track_hog);
       exit = true;
@@ -515,40 +372,36 @@ void GraphoScan::showImgTrackAndHog(string imgTrack, string imgHog){
   
 }
 
-void GraphoScan::saveImgPtsAndImgTraject(const char* filename_imgPtsObjet,const char* filename_imgTrajectoire_cor)
-{
-  //enregistrer l'image des points de la trajectoire
+void GraphoScan::saveImgPtsAndImgTraject(const char* filename_imgPtsObjet,const char* filename_imgTrajectoire_cor) {
+
+  // save picture with trajectory points
   cv::imwrite(filename_imgPtsObjet, imgTrajectoire);
 
-  //enregistrer la trajectoire
+  // save picture with HOG trajectory
   cv::imwrite(filename_imgTrajectoire_cor, imgTrajectoire_cor);
 
 }
 
-cv::Mat GraphoScan::getImgTrajectoire_Cor(vector<Point2f> ptsObjet)
-{
+cv::Mat GraphoScan::getImgTrajectoire_Cor(vector<Point2f> ptsObjet) {
+  
   cv::Mat imgTmp = cv::Mat::zeros(imgTrajectoire_cor.size(), imgTrajectoire_cor.type());
-
   int size = 3;
-  //une ellipse dans le rectangle size*size
+  
   cv::Mat kernel_Ero = getStructuringElement(MORPH_ELLIPSE, Size(size, size));
   cv::Mat kernel_Dil = kernel_Ero;
 
-  //connect all the center points
-  for (int i = 0; i < ptsObjet.size() - 1; i++)
-    {
-      line(imgTmp, ptsObjet[i], ptsObjet[i + 1], Scalar(0, 255, 255), 2);
-    }
+  // connect all the center points
+  for (int i = 0; i < ptsObjet.size() - 1; i++) {
+    line(imgTmp, ptsObjet[i], ptsObjet[i + 1], Scalar(0, 255, 255), 2);
+  }
 
-  //transforme l'image en niveau de gris
+  // set picture with grayscale
   cv::cvtColor(imgTmp, imgTmp, CV_BGR2GRAY);
 
-  //supprime les niveaux de gris pour avoir soit du blanc soit du noir
+  // delete picture grayscale
   cv::threshold(imgTmp, imgTmp, 128, 256, CV_THRESH_BINARY);
-  //arrondit les angles 
-  cv::dilate(imgTmp, imgTmp, kernel_Dil);
-  //redondant car affich¨¦ apr¨¨s
-  //cv::imshow("imgTmp", imgTmp); 
+  
+  cv::dilate(imgTmp, imgTmp, kernel_Dil); 
   return imgTmp;
 }
 
@@ -557,41 +410,38 @@ cv::Mat GraphoScan::transformPerspective(const cv::Mat & imgSrc) {
   cv::setMouseCallback("Src", mouseSelectPoint);
 
   cv::Mat temp = cv::Mat::zeros(imgSrc.size(), imgSrc.type());
-  while (true)
-    {
-      for (int i = 0; i < roi.size(); i++)
-	{
-	  cv::circle(temp, roi[i], 2, Scalar(0, 255, 0), 2);
-	  if (i > 0)
-	    line(temp, roi[i - 1], roi[i], Scalar(0, 255, 255), 2);
-	}
-      if (isFinished)
-	{
-	  mRoi = roi;
-	  line(temp, mRoi[mRoi.size() - 1], mRoi[0], Scalar(0, 255, 255), 2);
-
-	  //Sort the points in anti-clockwise
-	  Point2f v1 = mRoi[1] - mRoi[0];
-	  Point2f v2 = mRoi[2] - mRoi[0];
-
-	  if (v1.cross(v2) > 0)
-	    swap(mRoi[1], mRoi[3]);
-	  break;
-	}
-      cv::imshow("Src", imgSrc + temp);
-      if (waitKey(1) == 27)
-	exit(1);
+  while (true) {
+    for (int i = 0; i < roi.size(); i++) {
+      cv::circle(temp, roi[i], 2, Scalar(0, 255, 0), 2);
+      if (i > 0)
+	line(temp, roi[i - 1], roi[i], Scalar(0, 255, 255), 2);
     }
-  //setMouseCallback("Src", NULL);
+    if (isFinished) {
+      mRoi = roi;
+      line(temp, mRoi[mRoi.size() - 1], mRoi[0], Scalar(0, 255, 255), 2);
 
-  //create the cv::rectangle including the contour
+      // Sort the points in anti-clockwise
+      Point2f v1 = mRoi[1] - mRoi[0];
+      Point2f v2 = mRoi[2] - mRoi[0];
+
+      if (v1.cross(v2) > 0)
+	swap(mRoi[1], mRoi[3]);
+      break;
+    }
+      
+    cv::imshow("Src", imgSrc + temp);
+    if (waitKey(1) == 27)
+      exit(1);
+  }
+
+  // create the cv::rectangle including the contour
   Rect2f rect = boundingRect(roi);
 
   cv::rectangle(temp, rect, Scalar(0, 0, 255), 2);
 
-  //cv::imshow("Src", imgSrc + temp);
+  // cv::imshow("Src", imgSrc + temp);
 
-  //ajuster le rectangle de la ROI
+  // set roi shape to perfect square shape
   Point2f ptM0 = (roi[0] + roi[1]) / 2;
   Point2f ptM1 = (roi[1] + roi[2]) / 2;
   Point2f ptM2 = (roi[2] + roi[3]) / 2;
@@ -612,7 +462,7 @@ cv::Mat GraphoScan::transformPerspective(const cv::Mat & imgSrc) {
   modelPoint.push_back(Point2f(rect_width, rect_height));
   modelPoint.push_back(Point2f(rect_width, 0.0f));
 
-  //transformee perspective
+  // transforme perspective
   M = getPerspectiveTransform(roi, modelPoint);
 
   frameSize = Size(rect_width, rect_height);
@@ -621,69 +471,27 @@ cv::Mat GraphoScan::transformPerspective(const cv::Mat & imgSrc) {
   return imgRoi;
 }
 
-
-
-//
-void GraphoScan::readTracjectoire(const char* filename)
-{
+void GraphoScan::readTracjectoire(const char* filename) {
+  
   ifstream fin(filename);
   ptsObjet.clear();
 
-  if (!fin.is_open())
-    {
-      std::cout << "Cannot open the file " << filename << "." << endl;
-      exit(1);
+  if (!fin.is_open()) {
+    std::cout << "Cannot open the file " << filename << "." << endl;
+    exit(1);
+  } else {
+    for (int i = 0; fin.good(); i++) {
+      Point2f pt;
+      fin >> pt.x;
+      fin >> pt.y;
+      ptsObjet.push_back(pt);
     }
-  else
-    {
-      for (int i = 0; fin.good(); i++)
-	{
-	  Point2f pt;
-	  fin >> pt.x;
-	  fin >> pt.y;
-	  ptsObjet.push_back(pt);
-	}
-    }
+  }
 }
 
-vector<Point2f> GraphoScan::getPtsTrajectoire()
-{
-  return ptsObjet;
-}
+void GraphoScan::calAndSavePointsOf3D(Size sizeImg, const char* filename_left, const char* filename_right, const char* filename_output,const char* filename_outputZ) {
 
-void GraphoScan::calAndSavePointsOf3D(Size sizeImg, const char* filename_left,
-                                      const char* filename_right, const char* filename_output,
-                                      const char* filename_outputZ)
-{
-  /* ========= 1 ========= */
-  //	cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1105.44288, 0, 675.41065, 0, 1107.46806, 449.85884, 0, 0, 1);
-  //	cv::Mat cameraMatrix2 = (cv::Mat_<double>(3, 3) << 1097.27838, 0, 653.73491, 0, 1100.13557, 462.01760, 0, 0, 1);
-  //
-  //	cv::Mat distortionMatrix1 = (cv::Mat_<double>(1, 5) << -0.25772, 0.16186, -0.00084, -0.00165, 0.00000);
-  //	cv::Mat distortionMatrix2 = (cv::Mat_<double>(1, 5) << -0.23751, 0.09606, -0.00040, -0.00194, 0.00000);
-  //
-  //	cv::Mat rotation3_1 = (cv::Mat_<double>(3, 1) << 0.41045, 0.03139, -0.02397);
-  //	cv::Mat rotationMatrix;
-  //	cv::Rodrigues(rotation3_1, rotationMatrix);
-  //	cv::Mat translationMatrix = (cv::Mat_<double>(3, 1) << 21.00185, 178.03986, 18.90310);
-
-  /* ========= 2 ========= */
-  //cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1089.44583, 0, 668.75803, 0, 1091.90131, 468.74164, 0, 0, 1);
-  //cv::Mat cameraMatrix2 = (cv::Mat_<double>(3, 3) << 1095.15709, 0, 652.91437, 0, 1098.01808, 462.40336, 0, 0, 1);
-
-  //cv::Mat distortionMatrix1 = (cv::Mat_<double>(1, 5) << -0.23212, 0.07308, 0.00120, -0.00133, 0.00000);
-  //cv::Mat distortionMatrix2 = (cv::Mat_<double>(1, 5) << -0.25283, 0.13401, -0.00077, -0.00013, 0.00000);
-
-  //cv::Mat rotation3_1 = (cv::Mat_<double>(3, 1) << -0.00003, 0.00041, 0.00611);
-  //cv::Mat rotationMatrix;
-  //cv::Rodrigues(rotation3_1, rotationMatrix);
-  //cv::Mat translationMatrix = (cv::Mat_<double>(3, 1) << -0.82428, 59.62611, 1.73222);
-
-  /* ========= 3 ========= */
-	
-	
-  //Donn¨¦es matlab fournies en dur 
-  //a modifier
+  // matlab data are all float which hard coded
   cv::Mat cameraMatrix1 = (cv::Mat_<double>(3, 3) << 1114.4, 0, 0,
                            0, 1110.7, 0,
                            668.7401, 419.1680, 1);
@@ -699,247 +507,215 @@ void GraphoScan::calAndSavePointsOf3D(Size sizeImg, const char* filename_left,
                             0.0250, -0.4389, 0.8982);
   cv::Mat translationMatrix = (cv::Mat_<double>(3, 1) << 32.1360, 222.3364, 19.5136);
 
+  // R1,R2 rotation matrix
+  // P1,P2 projection martix
+  // Q =  PxR
   cv::Mat R1, R2, P1, P2, Q;
-  //stereoRectify (cameraMatrix1,camera1 distortion,cameraMatrix2, camera2 distortion,taille de l'image,matrice de rotation entre les 2 cameras,
-  // vecteur de translation entre les 2 cameras, R1: matrice de rotation 1ere cam, R2: matrice de rotation 2eme cam, P1: matrice de projection 1ere cam,
-  // P2: matrice de projection 2eme cam,Q: matrice obtenue pour une projection dans un espace 3D)
+  
   cv::stereoRectify(cameraMatrix1, distortionMatrix1, cameraMatrix2, distortionMatrix2, sizeImg, rotationMatrix, translationMatrix,
                     R1, R2, P1, P2, Q);
 
-  //OpenCV
   GraphoScan grapho_left, grapho_right;
 
-  //read the points from files
+  // read the points from files
   grapho_left.readTracjectoire(filename_left);
   grapho_right.readTracjectoire(filename_right);
 
-  //recupere dans ptsR/L les points du tracking de chaque camera
+  // save HOG trajectory points of each cameras
   vector<Point2f> ptsLeft = grapho_left.getPtsTrajectoire();
   vector<Point2f> ptsRight = grapho_right.getPtsTrajectoire();
 
-  if (ptsLeft.size() != ptsRight.size())
-    {
-      std::cout << "ptsLeft.size() != ptsRight.size()." << endl;
-      std::cout << "ptsLeft.size() = " << ptsLeft.size() << endl;
-      std::cout << "ptsRight.size() = " << ptsRight.size() << endl;
-      exit(1);
-    }
+  if (ptsLeft.size() != ptsRight.size()) {
+    cout << "ptsLeft.size() != ptsRight.size()." << endl;
+    cout << "ptsLeft.size() = " << ptsLeft.size() << endl;
+    cout << "ptsRight.size() = " << ptsRight.size() << endl;
+    exit(1);
+  }
 
   int size = ptsLeft.size();
   vector<cv::Mat> v;
-  for (int i = 0; i < size; i++)
-    {
-      vector<Point2f> vectLeftTmp;
-      vectLeftTmp.push_back(ptsLeft[i]);
+  for (int i = 0; i < size; i++) {
+    vector<Point2f> vectLeftTmp;
+    vectLeftTmp.push_back(ptsLeft[i]);
 
-      vector<Point2f> vectRightTmp;
-      vectRightTmp.push_back(ptsRight[i]);
+    vector<Point2f> vectRightTmp;
+    vectRightTmp.push_back(ptsRight[i]);
 
-      cv::Mat M;
-      //triangulatePoints(projection cam1, projection cam2, pts cam1, pts cam2, pts3D)
-      cv::triangulatePoints(P1, P2, vectLeftTmp, vectRightTmp, M);
-      std::cout << "Num - " << i << ": " << M << endl;
-      v.push_back(M.clone());
-    }
-	
-  //cv::Mat M;
-  //cv::triangulatePoints(P1, P2, ptsLeft, ptsRight, M);
+    cv::Mat M;
+      
+    cv::triangulatePoints(P1, P2, vectLeftTmp, vectRightTmp, M);
+    std::cout << "Num - " << i << ": " << M << endl;
+    v.push_back(M.clone());
+  }
 
+  
   ofstream f(filename_output);
-  if (!f.is_open())
-    {
-      std::cout << "Cannot open the file" << endl;
-      exit(1);
+  if (!f.is_open()) {
+    std::cout << "Cannot open the file" << endl;
+    exit(1);
+  } else {
+    f.clear();
+    for (int i = 0; i < v.size(); i++) {
+      float* ptr = v[i].ptr<float>(0);
+      f << ptr[0] << " " << ptr[1] << " " << ptr[2] << " " << ptr[3] << endl;
     }
-  else
-    {
-      f.clear();
-      for (int i = 0; i < v.size(); i++)
-        {
-          float* ptr = v[i].ptr<float>(0);
-          f << ptr[0] << " " << ptr[1] << " " << ptr[2] << " " << ptr[3] << endl;
-        }
-     }
+  }
 
   ofstream fz(filename_outputZ);
-  if(!fz.is_open()){
+  
+  if(!fz.is_open()) {
     std::cout << "Cannot open the Z file" << endl;
     exit(1);
-  }else{
+  } else {
     f.clear();
-    for (int i = 0; i < v.size(); i++)
-      {
-        float* ptr = v[i].ptr<float>(0);
-        float fi= i*1.0f;
-        fz << ptr[0] << " " << ptr[1] << " " << i/2000.0f << " " << ptr[3] << endl;
-      }
+    for (int i = 0; i < v.size(); i++) {
+      float* ptr = v[i].ptr<float>(0);
+      float fi= i*1.0f;
+      fz << ptr[0] << " " << ptr[1] << " " << i/2000.0f << " " << ptr[3] << endl;
+    } 
     
   }
 
 }
 
-void GraphoScan::selectPointManuel(const char* filename)
-{
+void GraphoScan::selectPointManuel(const char* filename) {
+  
   VideoCapture cap(filename);
-  if (!cap.isOpened())
-    {
-      cout << "Cannot open the file:" << filename << endl;
-      exit(1);
-    }
+  if (!cap.isOpened()) {
+    cout << "Cannot open the file:" << filename << endl;
+    exit(1);
+  }
+  
   int nFrame = cap.get(CAP_PROP_FRAME_COUNT);
-
-  //si sauter des frames?
+  
   char skipFrame;
-  std::cout << "if skip frames? [y/n]: ";
+  cout << "if skip frames? [y/n]: ";
   cin >> skipFrame;
   int nFrameStart = 0;
   int nFrameEnd = nFrame;
-  if ((skipFrame == 'y') || (skipFrame == 'Y'))
-    {
-      while (true)
-	{
-	  std::cout << "start from:";
-	  string str;
-	  cin >> str;
-	  nFrameStart = stoi(str);
-	  if (nFrameStart < 0)
-	    {
-	      cout << "<error> the number of the frame should be positive." << endl;
-	      continue;
-	    }
-	  else
-	    {
-	      cap.set(CV_CAP_PROP_POS_FRAMES, nFrameStart);
-	      std::cout << "strat from " << nFrameStart << " frame" << endl;
-	      break;
-	    }
-	}
-
-      while (true)
-	{
-	  std::cout << "end at: ";
-	  string str;
-	  cin >> str;
-	  nFrameEnd = stoi(str);
-	  if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame))
-	    {
-	      std::cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
-	      continue;
-	    }
-	  else
-	    {
-	      std::cout << "end at " << nFrameEnd << endl;
-	      break;
-	    }
-	}
+  if ((skipFrame == 'y') || (skipFrame == 'Y')) {
+    while (true) {
+      cout << "start from:";
+      string str;
+      cin >> str;
+      nFrameStart = stoi(str);
+      if (nFrameStart < 0) {
+	cout << "<error> the number of the frame should be positive." << endl;
+	continue;
+      } else {
+	cap.set(CV_CAP_PROP_POS_FRAMES, nFrameStart);
+	cout << "strat from " << nFrameStart << " frame" << endl;
+	break;
+      }
     }
+
+    while (true) {
+      cout << "end at: ";
+      string str;
+      cin >> str;
+      nFrameEnd = stoi(str);
+      if ((nFrameEnd <= nFrameStart) || (nFrameEnd > nFrame)) {
+	cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
+	continue;
+      } else {
+	cout << "end at " << nFrameEnd << endl;
+	break;
+      }
+    }
+  }
 
   cv::Mat imgSrc;
-  int frameCount = 0;
   ptsObjet.clear();
-  for (; nFrameStart + frameCount < nFrameEnd; frameCount++)
-    {
-      cap.read(imgSrc);
-		
-      Rect2d box = selectROI(imgSrc);
-		
-      cv::Point2f ptCenter = cv::Point2f(box.x + box.width*0.5, box.y + box.height*0.5);
-		
-      ptsObjet.push_back(ptCenter);
-		
-      std::cout << "nFrame = " << nFrameStart + frameCount << endl;
-    }
+  for (int frameCount = 0; nFrameStart + frameCount < nFrameEnd; frameCount++) {
+    cap.read(imgSrc);		
+    Rect2d box = selectROI(imgSrc);
+      
+    cv::Point2f ptCenter = cv::Point2f(box.x + box.width*0.5, box.y + box.height*0.5);
+    ptsObjet.push_back(ptCenter);
+      
+    cout << "nFrame = " << nFrameStart + frameCount << endl;
+  }
 }
 
-//a tester : 1er = ¨¦paissir le trait 
-//			 2eme = donner un effet de plume
-//           3eme = adoucir les droites
-void GraphoScan::insertPoints(int n)
-{
-  if (ptsObjet.size() <= 1)
-    {
-      std::cout << "ptsObjet.size() <= 1" << endl;
-      exit(1);
-    }
+void GraphoScan::insertPoints(int n) {
+  if (ptsObjet.size() <= 1) {
+    cout << "ptsObjet.size() <= 1" << endl;
+    exit(1);
+  }
 
   vector<cv::Point2f> vect;
   float eps = 20;
 
   vect.clear();
-  for (size_t i = 0; i < ptsObjet.size() - 1; i++)
-    {
-      cv::Point2f pt1 = ptsObjet[i];
-      cv::Point2f pt2 = ptsObjet[i + 1];
-
-      cv::Point2f v = pt2 - pt1;
-      vect.push_back(pt1);
-      float dd = sqrt(v.x*v.x + v.y*v.y);
-      float step_x = v.x / n;
-      float step_y = v.y / n;
-
-      for (size_t i = 1; i < n; i++)
-	{
-	  cv::Point2f pt = cv::Point2f(pt1.x + i * step_x, pt1.y + i*step_y);
-	  vect.push_back(pt);
-	}
-		
+  
+  for (size_t i = 0; i < ptsObjet.size() - 1; i++) {
+    cv::Point2f pt1 = ptsObjet[i];
+    cv::Point2f pt2 = ptsObjet[i + 1];
+    
+    cv::Point2f v = pt2 - pt1;
+    vect.push_back(pt1);
+    float dd = sqrt(v.x*v.x + v.y*v.y);
+    float step_x = v.x / n;
+    float step_y = v.y / n;
+    
+    for (size_t i = 1; i < n; i++) {
+      cv::Point2f pt = cv::Point2f(pt1.x + i * step_x, pt1.y + i*step_y);
+      vect.push_back(pt);
     }
+  }
   ptsObjet = vect;
 }
 
-//pts = 4 points du quadrilat¨¨re de selection
-void GraphoScan::insertPoints(vector<Point2f>& pts, int n)
-{
-  if (pts.size() <= 1)
-    {
-      std::cout << "pts.size() <= 1" << endl;
-      exit(1);
-    }
+void GraphoScan::insertPoints(vector<Point2f>& pts, int n) {
+  if (pts.size() <= 1) {
+    std::cout << "pts.size() <= 1" << endl;
+    exit(1);
+  }
 
   vector<cv::Point2f> vect;
   float eps = 20;
 
   vect.clear();
-  for (size_t i = 0; i < pts.size() - 1; i++)
-    {
-      cv::Point2f pt1 = pts[i];
-      cv::Point2f pt2 = pts[i + 1];
+  for (size_t i = 0; i < pts.size() - 1; i++) {
+    cv::Point2f pt1 = pts[i];
+    cv::Point2f pt2 = pts[i + 1];
 
-      cv::Point2f v = pt2 - pt1;
-      vect.push_back(pt1);
-      //distance entre pt2 et pt1
-      float dd = sqrt(v.x*v.x + v.y*v.y);
-      float step_x = v.x / n;
-      float step_y = v.y / n;
+    cv::Point2f v = pt2 - pt1;
+    vect.push_back(pt1);
+      
+    // distance between pt2 and pt1
+    float dd = sqrt(v.x*v.x + v.y*v.y);
+    float step_x = v.x / n;
+    float step_y = v.y / n;
 
-      for (size_t i = 1; i < n; i++)
-	{
-	  cv::Point2f pt = cv::Point2f(pt1.x + i * step_x, pt1.y + i*step_y);
-	  vect.push_back(pt);
-	}
-
+    for (size_t i = 1; i < n; i++) {
+      cv::Point2f pt = cv::Point2f(pt1.x + i * step_x, pt1.y + i*step_y);
+      vect.push_back(pt);
     }
+
+  }
   pts = vect;
 }
 
 void GraphoScan::init_VideoWritter() {
-  std::cout << "Video will be saved" << endl;
+  
+  cout << "Video will be saved" << endl;
+  
   outputVideo1.open(NAME_L, CV_FOURCC('X', 'V', 'I', 'D'), 10, frameSize, true);
   if (!outputVideo1.isOpened()) {
-    std::cout << "could not open the output video1 for write" << endl;
+    cout << "could not open the output video1 for write" << endl;
     return;
   }
 
-  //problem here => outputVideo1 is bigger than outputVideo
   outputVideo2.open(NAME_R, CV_FOURCC('X', 'V', 'I', 'D'), 10, frameSize, true);
   if (!outputVideo2.isOpened()) {
-    std::cout << "could not open the output video2 for write" << endl;
+    cout << "could not open the output video2 for write" << endl;
     return;
   }
 
   outputVideo3.open(NAME_ALL, CV_FOURCC('X', 'V', 'I', 'D'), 10, Size(frameSize.width * 2, frameSize.height), true);
   if (!outputVideo3.isOpened()) {
-    std::cout << "could not open the output video3 for write" << endl;
+    cout << "could not open the output video3 for write" << endl;
     return;
   }
 }
@@ -949,4 +725,8 @@ void GraphoScan::init() {
     lut[i] = saturate_cast<uchar>(pow((float)(i / 255.0f), fgamma)*255.0f);
   }
   mRoi.clear();
+}
+
+vector<Point2f> GraphoScan::getPtsTrajectoire() {
+  return ptsObjet;
 }
