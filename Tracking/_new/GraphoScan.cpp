@@ -5,13 +5,14 @@
 #include "GraphoScan.hpp"
 
 using namespace std;
+using namespace cv;
 
 #define MIN_RECT_WIDTH 50
 #define MIN_RECT_HEIGHT 50
 
 #define MYHOG
 
-vector<Point2f> roi;
+vector<cv::Point2f> roi;
 bool isFinished = false;
 int mNum = 4;
 string name_window="Tracking";
@@ -84,14 +85,6 @@ void mouseSelectPoint(int event, int x, int y, int flags, void* userData) {
 
 void GraphoScan::myTracker(const char* filename,const string algo_name, bool isTransPerspective) {
   
-  // if you need to save the video
-  cout << "Save video? [y/n]: ";
-  
-  cin >> saveVideo;
-  if ((saveVideo == 'y') || (saveVideo == 'Y')) {
-    init_VideoWritter();
-  }
-
   VideoCapture cap;
   cap.open(filename);
   
@@ -104,7 +97,7 @@ void GraphoScan::myTracker(const char* filename,const string algo_name, bool isT
   int nFrame = cap.get(CAP_PROP_FRAME_COUNT);
   // if you need to skip frames to set start at the begin of writting
   char skipFrame;
-  cout << "if skip frames? [y/n]: ";
+  cout << "Do you want to skip frames? [y/n]: ";
   cin >> skipFrame;
   int nFrameStart = 0;
   int nFrameEnd = nFrame;
@@ -112,7 +105,7 @@ void GraphoScan::myTracker(const char* filename,const string algo_name, bool isT
   // permit to begin and finish at the frames numbers set before
   if ((skipFrame == 'y')|| (skipFrame == 'Y')) {
     while (true) {
-      cout << "start from:";
+      cout << "start at : ";
       string str;
       cin >> str;
       nFrameStart = stoi(str);
@@ -122,12 +115,12 @@ void GraphoScan::myTracker(const char* filename,const string algo_name, bool isT
       } else {
 	// set proprety of start frame to the videocapture properties
 	cap.set(CV_CAP_PROP_POS_FRAMES, nFrameStart);
-	cout << "strat from " << nFrameStart << " frame" << endl;
+	cout << "start at frame " << nFrameStart << endl;
 	break;
       }
     }
     while (true) {
-      cout << "end at: ";
+      cout << "end at : ";
       string str;
       cin >> str;
       nFrameEnd = stoi(str);
@@ -136,7 +129,7 @@ void GraphoScan::myTracker(const char* filename,const string algo_name, bool isT
 	cout << "<error> nFrameEnd <= mFrameStart or nFrameEnd > nFrame." << endl;
 	continue;
       } else {
-	cout << "end at " << nFrameEnd << endl;
+	cout << "end at frame " << nFrameEnd << endl;
 	break;
       }
     }
@@ -184,6 +177,8 @@ void GraphoScan::myTracker(const char* filename,const string algo_name, bool isT
 
   // create a tracker with algo_name in parameter
   Ptr<Tracker> tracker = Tracker::create(algo_name);
+
+  if(NULL == tracker) cout << "NULL" << endl;
   
   tracker->init(imgRoi, box);
 
@@ -204,7 +199,7 @@ void GraphoScan::myTracker(const char* filename,const string algo_name, bool isT
     }
       
     double t = (double)getTickCount();
-
+    
     cap.read(imgSrc);
 
     if (imgSrc.empty()) {
@@ -224,7 +219,7 @@ void GraphoScan::myTracker(const char* filename,const string algo_name, bool isT
 		
     t = (double)cvGetTickCount() - t;
     std::cout << "cost time(calculation):" << t / ((double)getTickFrequency()*1000.f) << endl;
-
+    
     // tracking
     tracker->update(imgRoi, box);
 
@@ -255,14 +250,6 @@ void GraphoScan::myTracker(const char* filename,const string algo_name, bool isT
     imgTrajectoire.copyTo(imgAll(Rect(imgRoi.cols, 0, imgRoi.cols, imgRoi.rows)));
 
     cv::imshow(name_window, imgAll);
-      
-    if ((saveVideo == 'y') || (saveVideo == 'Y')) {
-	
-      // save videos
-      outputVideo1.write(imgTrajectoire);
-      outputVideo2.write(imgRoi + imgSuivi);
-      outputVideo3.write(imgAll);
-    }
       
     cout << "frameCount: " << frameCount++ << endl;
 
@@ -698,29 +685,6 @@ void GraphoScan::insertPoints(vector<Point2f>& pts, int n) {
 
   }
   pts = vect;
-}
-
-void GraphoScan::init_VideoWritter() {
-  
-  cout << "Video will be saved" << endl;
-  
-  outputVideo1.open(NAME_L, CV_FOURCC('X', 'V', 'I', 'D'), 10, frameSize, true);
-  if (!outputVideo1.isOpened()) {
-    cout << "could not open the output video1 for write" << endl;
-    return;
-  }
-
-  outputVideo2.open(NAME_R, CV_FOURCC('X', 'V', 'I', 'D'), 10, frameSize, true);
-  if (!outputVideo2.isOpened()) {
-    cout << "could not open the output video2 for write" << endl;
-    return;
-  }
-
-  outputVideo3.open(NAME_ALL, CV_FOURCC('X', 'V', 'I', 'D'), 10, Size(frameSize.width * 2, frameSize.height), true);
-  if (!outputVideo3.isOpened()) {
-    cout << "could not open the output video3 for write" << endl;
-    return;
-  }
 }
 
 void GraphoScan::init() {

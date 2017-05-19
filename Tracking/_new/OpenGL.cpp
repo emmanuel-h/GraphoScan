@@ -360,22 +360,22 @@ void do_movement()
 
   if (keys[GLFW_KEY_W])
     {
-      cout << "W" << endl;
+      //cout << "W" << endl;
       myCamera.ProcessKeyboard(FORWARD, deltaTime);
     }
   if (keys[GLFW_KEY_S])
     {
-      cout << "S" << endl;
+      //cout << "S" << endl;
       myCamera.ProcessKeyboard(BACKWARD, deltaTime);
     }
   if (keys[GLFW_KEY_A])
     {
-      cout << "A" << endl;
+      //cout << "A" << endl;
       myCamera.ProcessKeyboard(LEFT, deltaTime);
     }
   if (keys[GLFW_KEY_D])
     {
-      cout << "W" << endl;
+      //cout << "W" << endl;
       myCamera.ProcessKeyboard(RIGHT, deltaTime);
     }
 }

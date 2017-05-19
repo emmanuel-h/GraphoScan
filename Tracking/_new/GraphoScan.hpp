@@ -1,11 +1,8 @@
 #pragma once
 
-#define NAME_L ("video_Trajectoire.avi")
-#define NAME_R ("video_Roi+Suivi.avi")
-#define NAME_ALL ("video_Trajectoire+Roi+Suivi.avi")
-
 #include <iostream>
 #include <fstream>
+
 #include <opencv2/tracking.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -48,16 +45,11 @@ public:
   cv::Mat M;
 
   //vector use for perspective
-  vector<Point2f> modelPoint;
-  vector<Point2f> modelImagePoint;
-
-  // output video if saveVideo == true
-  cv::VideoWriter outputVideo1;
-  cv::VideoWriter outputVideo2;
-  cv::VideoWriter outputVideo3;
+  vector<cv::Point2f> modelPoint;
+  vector<cv::Point2f> modelImagePoint;
 
   // Roi centers during tracking
-  vector<Point2f> ptsObjet;
+  vector<cv::Point2f> ptsObjet;
 
   /*!
    * \fn GraphoScan()
@@ -72,18 +64,9 @@ public:
   /*!
    * \fn ~GraphoScan()
    * \brief class destructor
-   * finished video to save and save them
+   *
    */
-  ~GraphoScan(){
-    if ((saveVideo == 'y') || (saveVideo == 'Y')) {
-      outputVideo1.release();
-      std::cout << "outputVideo1 est bien relachee." << endl;
-      outputVideo2.release();
-      std::cout << "outputVideo2 est bien relachee." << endl;
-      outputVideo3.release();
-      std::cout << "outputVideo3 est bien relachee." << endl;
-    }
-  };
+  ~GraphoScan(){};
 
   /*!
    * \fn vector<Point2f> getPtsTrajectoire()
@@ -93,7 +76,7 @@ public:
    *
    * \return ptsObjet type vector<Point2f>
    */
-  vector<Point2f> getPtsTrajectoire();
+  vector<cv::Point2f> getPtsTrajectoire();
 
   
   /*!
@@ -104,7 +87,7 @@ public:
    *
    * \return ptsObjet type vector<Point2f>
    */
-  cv::Mat getImgTrajectoire_Cor(vector<Point2f> ptsObjet);
+  cv::Mat getImgTrajectoire_Cor(vector<cv::Point2f> ptsObjet);
 
   /*!
    * \fn void calcImgPtsAndImgTrack()
@@ -191,14 +174,6 @@ public:
   void myTracker(const char* filename, const string algo_name ,bool isTransPerspective = false);
 
   /*!
-   * \fn void init_VideoWritter()
-   * \brief initalize videoWritter
-   *
-   * Initialize videoWritter for saved videos at the end of the program
-   */
-  void init_VideoWritter();
-
-  /*!
    * \fn void init()
    * \brief initalize lut parameter
    *
@@ -246,7 +221,7 @@ public:
    * \param pts vector to save new points
    * \param n number of points to insert
    */
-  void insertPoints(vector<Point2f>& pts, int n = 4);
+  void insertPoints(vector<cv::Point2f>& pts, int n = 4);
 
   /*!
    * \fn void calAndSavePointsOf3D(Size sizeImg, const char* filename_left, const char* filename_right, const char* filename_output, const char * filename_outputZ)

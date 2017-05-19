@@ -1,31 +1,22 @@
-//#include <GL/glew.h>
-//#include <GLFW/glfw3.h>
-
-//#include <GL/gl.h>
-//#include <GL/glut.h>
-//#include <GL/freeglut.h>
-
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
-
 #include "GraphoScan.hpp"
 #include "OpenGL.hpp"
-
 
 #define OPENCV
 #define OPENGL
 //#define MANUAL_SELECTION
 
+
 string algo[]={"KCF","BOOSTING","MIL","TLD"};
-vector<Point2f> pts;
+vector<cv::Point2f> pts;
 bool isFrameSelected = false;
 
+/*!
+ * \fn int framesOfVideo(const char* filename)
+ * \brief calculate number of frame in the video
+ *
+ * calculate the number of frames in the video named  
+ */
 int framesOfVideo(const char* filename);
-
-void mouseSelectPoint_Callback(int event, int x, int y, int flags, void* userData);
-
-void videoClipper(const char* videoName);
 
 int main(int argc, char ** argv) {
 
@@ -61,6 +52,8 @@ int main(int argc, char ** argv) {
       cout << "Good algorithms : KCF, TLD, BOOSTING, MIL" << endl;
       exit(1);
     }
+  }else{
+    algo_name="KCF";
   }
 
   char * filename_g = argv[1];
@@ -82,7 +75,7 @@ int main(int argc, char ** argv) {
 #ifdef OPENCV
   
   int frame = framesOfVideo(filename_g);
-  cout << frame << endl;
+  cout << "FrameCount = " << frame << endl;
 
   GraphoScan grapho_left, grapho_right;
 
@@ -153,7 +146,7 @@ int framesOfVideo(const char* filename) {
   if (!cap.isOpened()) {
       cout << "Cannot open the video." << endl;
       exit(1);
-    }
+  }
 
   int frameCount = 0;
   cv::Mat imgSrc;
@@ -161,14 +154,13 @@ int framesOfVideo(const char* filename) {
   while (true) {
       cap.read(imgSrc);
       if (imgSrc.empty()) {
-	  cout << "imgSrc is empty." << endl;
+	  cout << "Source picture is empty." << endl;
 	  break;
 	}
 
       vectImages.push_back(imgSrc.clone());
       frameCount++;
     }
-  cout << "frameCount = " << endl;
 
   //display video
   int count = 0;
@@ -186,60 +178,4 @@ int framesOfVideo(const char* filename) {
   return frameCount;
 }
 
-void mouseSelectPoint_Callback(int event, int x, int y, int flags, void * userData) {
-  cv::Point2f pt = cv::Point2f(x, y);
-  switch (event) {
-    case CV_EVENT_LBUTTONDOWN:
-      pts.push_back(pt);
-      std::cout << "pt.x = " << pt.x << "; pt.y" << pt.y << endl;
-      break;
-    default: break;
-    }
-}
 
-void videoClipper(const char* videoName)  {
-  cv::Mat imgSrc;
-  VideoCapture cap(videoName);
-  if (!cap.isOpened())
-    {
-      std::cout << "Cannot open the video." << endl;
-      exit(1);
-    }
-  cap.read(imgSrc);
-
-  //la taille de la video
-  Size frameSize = Size(imgSrc.cols / 2.0f, imgSrc.rows);
-  std::cout << "frameSize = " << frameSize << endl;
-
-  //initialisation des videowriters
-  cv::VideoWriter outputVideo1("left.avi", CV_FOURCC('X', 'V', 'I', 'D'), 10, frameSize, true);
-  if (!outputVideo1.isOpened()) {
-    std::cout << "could not open the output video1 for write" << endl;
-    return;
-  }
-
-  cv::VideoWriter outputVideo2("right.avi", CV_FOURCC('X', 'V', 'I', 'D'), 10, frameSize, true);
-  if (!outputVideo2.isOpened()) {
-    std::cout << "could not open the output video2 for write" << endl;
-    return;
-  }
-  cv::Mat imgLeft = imgSrc(cv::Rect2d(0, 0, frameSize.width, frameSize.height)).clone();
-  cv::Mat imgRight = imgSrc(cv::Rect2d(frameSize.width, 0, frameSize.width, frameSize.height)).clone();
-	
-  outputVideo1.write(imgLeft);
-  outputVideo2.write(imgRight);
-
-  int nFrameCount = 0;
-  // possiblement à changer par frameCount plus tard
-  while (nFrameCount < 270)
-    {
-      cap.read(imgSrc);
-      imgLeft = imgSrc(cv::Rect2d(0, 0, frameSize.width, frameSize.height)).clone();
-      imgRight = imgSrc(cv::Rect2d(frameSize.width, 0, frameSize.width, frameSize.height)).clone();
-
-      outputVideo1.write(imgLeft);
-      outputVideo2.write(imgRight);
-
-      nFrameCount++;
-    }
-}
