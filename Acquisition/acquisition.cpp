@@ -203,7 +203,7 @@ bool ReadInnerParam(const char* filename, long double cm[3][3], long double dc[5
 
 /*!
  * \fn int undistortion (int numCamera, string id, cv::Size imageSize, string date)
- * \brief Used to perform undistortion on recently captures videos
+ * \brief Used to perform undistortion on recently captured videos
  * 
  * \param numCamera The number of the camera which we want to undistort its capture
  * \param id The randomly generated ID affected to the video
@@ -216,6 +216,8 @@ int undistortion(int numCamera, string id, cv::Size imageSize, string date){
     long double cm[3][3], dc[5];
     cout << endl << "========== Read calibration parameters from file ==========" << endl;
 
+    // Well configured file with MatLab
+    // No clue on how to do that, ask previous Polytech students
     string name = "Calib_camera_" + int2str(numCamera) + "_Matlab.txt";
     ReadInnerParam(name.c_str(), cm, dc);
 
@@ -224,7 +226,8 @@ int undistortion(int numCamera, string id, cv::Size imageSize, string date){
 
     cv::Mat map1, map2;
 
-    //cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(), cv::Mat(), imageSize, CV_32FC1, map1, map2);
+    // cv::initUndistort + cv::remap OR cv::undistort only
+    cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(), cv::Mat(), imageSize, CV_32FC1, map1, map2);
 
     string source = date + "/" + date + "_camera_" + int2str(numCamera) + "_" + id + ".avi";
     cv::VideoCapture capture;
@@ -254,8 +257,10 @@ int undistortion(int numCamera, string id, cv::Size imageSize, string date){
             break;
         }
 
-        cv::undistort(srcMat, destMat, cameraMatrix, distCoeffs);
-        //cv::remap(srcMat, destMat, map1, map2, CV_INTER_LINEAR);
+        // other way to undistort
+        //cv::undistort(srcMat, destMat, cameraMatrix, distCoeffs);
+        
+        cv::remap(srcMat, destMat, map1, map2, CV_INTER_LINEAR);
 
         undist.write(destMat);
     }
@@ -410,25 +415,6 @@ int main(int argc, char* argv[]){
             cout << "=============== Camera n° " << id << " ==============" << endl;
 			PrintCameraInfo(&camInfoArray[id]);
         }
-        
-        /*
-		if(PGRERROR_OK != errorArray[id].GetType()){
-			cout << "Failed to connect to camera n° " << id << endl;
-            noProb = false;
-		}else{
-			cout << "Successfully connected to camera n° " << id << endl;
-		}
-		
-		//========== Get cameras' info and print it ==========
-		errorArray[id] = cameraArray[id].GetCameraInfo(&camInfoArray[id]);
-		if(PGRERROR_OK != errorArray[id].GetType()){
-			cout << "Failed to get informations from camera n° " << id << endl;
-            noProb = false;
-		}else{
-			cout << "=============== Camera n° " << id << " ==============" << endl;
-			PrintCameraInfo(&camInfoArray[id]);
-		}
-        */
 
 	}
 
