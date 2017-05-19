@@ -102,7 +102,7 @@ int main(int argc, char ** argv)
 #ifdef OPENCV
 
   //framesOfVideo("Test_xvid_001.avi");
-	//videoClipper("Test_xvid_001.avi");
+	videoClipper("Test_xvid_001.avi");
 	
 	GraphoScan grapho_left, grapho_right;
 	// inutile
