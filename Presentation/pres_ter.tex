@@ -16,15 +16,47 @@
 \titlepage
 \end{frame}
 
+
 \begin{frame}
 \frametitle{Introduction}
 \framesubtitle{Paléographie}
 \begin{definition}
 Science de l'étude des écritures manuscrites anciennes
 \end{definition}
-\begin{block}
+\begin{block}{Composé de}
+\begin{itemize}
+\item Lecture et édition des textes
+\item Étude des systèmes de production de l'écriture
+\item Évolution des écritures dans le temps
+	\begin{itemize}
+	\item Ductus : ordre et sens du tracé de la lettre
+	\end{itemize}
+\end{itemize}
 \end{block}
 \end{frame}
+
+\begin{frame}
+\frametitle{Introduction}
+\framesubtitle{Objectif et solution}
+\begin{block}{Objectif de GraphoScan}
+\begin{itemize}
+\item Relation mouvement de la plume / trace écrite
+\item Proposer une nouvelle représentation des écritures médiévales
+\end{itemize}
+\end{block}
+
+\begin{block}{Solution}
+\begin{itemize}
+\item Structure en bois avec deux caméras
+\item Application séparée en deux
+	\begin{itemize}
+	\item Acquisition de l'écriture
+	\item Tracking et reconstruction 3D du mouvement
+	\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
 
 \begin{frame}
 \frametitle{Plan}
@@ -92,6 +124,41 @@ Science de l'étude des écritures manuscrites anciennes
 \end{frame}
 
 \begin{frame}
+\frametitle{Travail réalisé}
+\framesubtitle{Organisation}
+\begin{itemize}
+\item Projet en deux parties
+\item Groupe séparé en deux
+	\begin{itemize}
+	\item Acquisition : Emmanuel + Benoît
+	\item Tracking et reconstruction : Martin + Thibault
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Travail réalisé}
+\framesubtitle{Travail effectué}
+\begin{figure}
+\includegraphics[width=0.5\textwidth]{../Rapport/Modules/Picture/fps.png}
+\includegraphics[width=0.5\textwidth]{../Rapport/Modules/Picture/latence.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Travail réalisé}
+\framesubtitle{Travail effectué}
+\begin{itemize}
+\item Augmentation des FPS / diminution de la latence
+\item Parallélisation
+\item Généralisation à n caméras
+\item Nettoyage du code
+\item Choix de l'algorithme de tracking
+\item Écriture des shaders
+\end{itemize}
+\end{frame}
+
+\begin{frame}
 \Huge{\centerline{Projet Final}}
 \end{frame}
 
@@ -125,6 +192,30 @@ Science de l'étude des écritures manuscrites anciennes
 
 \begin{frame}
 \frametitle{Conclusion}
+\framesubtitle{Compétences}
+\begin{itemize}
+\item UE de Programmation parallèle
+\item UE de Programmation graphique
+\item UE d'Outils pour l'exploration de données
+\item UE d'Analyse des algorithmes
+\item Utilisation de MatLab
+\item Utilisation d'algorithmes de tracking
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Conclusion}
+\framesubtitle{Résumé}
+\begin{itemize}
+\item Projet peu performant et brouillon
+\item Projet commenté, documenté, avec un manuel, toutes les parties fonctionnelles
+\item Amélioration possibles
+\item Devraient être simples à implémenter grâce au travail fait
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\Huge{\centerline{Merci pour votre attention}}
 \end{frame}
 
 \end{document}
