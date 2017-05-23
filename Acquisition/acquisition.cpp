@@ -28,9 +28,6 @@
 #define SN1 15508311 // serial number of the right camera
 // add the serial number of other cameras to keep camera 0 as left, camera 1 as right, and camera X as whatever
 
-#define BENCH true // set to true if user wants to estimate performances
-#define FPS_BENCH "fps.bench" // file where number of captured fps is written
-#define LATENCE_BENCH "latence.bench" // file where time between two RetrieveBuffer is written
 
 #define WINDOWS false // set to true if user is under Windows OS, false otherwise
 
@@ -56,6 +53,11 @@ static bool bench = false;
  * \brief default mode for display a window while capturing is set to false
  */
 static bool display = false;
+
+/*!
+ * \brief Number of frames to compute when not displaying the window
+ */
+static int nbFrame = -1;
 
 
 /*!
@@ -309,19 +311,50 @@ int main(int argc, char* argv[]){
 
     //=============== Ask parameters ===============
     cout << "Do you want to enter performance measurement mode ? [y/n]" << endl;
-    char chB;
-    cin >> chB;
+    char chB = ' ';
+    bool cond = false;
+    while(!cond){
+        cin >> chB;
+        if('y' == chB || 'Y' == chB || 'n' == chB || 'N' == chB){
+            cond = true;
+        }else{
+            cout << "Error : check your answer (enter 'y' for yes, 'n' for no)" << endl;
+        }
+    }
     if('y' == chB ||'Y' == chB){
         bench = true;
         cout << "### A measure of performances will be performed while capturing ###" << endl;
+    }else{
+        cout << "### No performance measures will be performed during the capture ###" << endl;
     }
 
-    cout << "Do you want to display the acquisition being captured by cameras ? [y/n]" << endl;
-    char chD;
-    cin >> chD;
+    cout << endl <<  "Do you want to display the acquisition being captured by cameras ? [y/n]" << endl;
+    char chD = ' ';
+    cond = false;
+    while(!cond){
+        cin >> chD;
+        if('y' == chD || 'Y' == chD || 'n' == chD || 'N' == chD){
+            cond = true;
+        }else{
+            cout << "Error : check your answer (enter 'y' for yes, 'n' for no)" << endl;
+        }
+    }
     if('y' == chD || 'Y' == chD){
         display = true;
         cout << "### The videos will be displayed while being captured ###" << endl;
+    }else{
+        cond = false;
+        cout << "### The videos won't be displayed while being captured ###" << endl;
+        cout << "How many frames do you want to capture ?" << endl;
+        while(!cond){
+            cin >> nbFrame;
+            if(0 < nbFrame){
+                cond = true;
+            }else{
+                cout << "Error : please enter a valid number" << endl;
+            }
+        }
+        cout << "Capturing " << nbFrame << " frames for this session" << endl << endlx;
     }
 	
 	cv::Size imageSize(CAMERA_WIDTH, CAMERA_HEIGHT);
@@ -587,8 +620,10 @@ int main(int argc, char* argv[]){
         //#pragma omp barrier
 
         counterArray[id] = 0;
-        
-        while(key != 27 /*counter < 600*/){ // replace 'key != 27' by 'counter < X', where X is the number of frames you want to capture
+
+        // replace 'key != 27' with 'counter < nbFrame' when there is no display or when you want to capture a certain number of frames,
+        // even if the display option is ON
+        while(key != 27 /*counter < nbFrame*/){
 
             if(bench){
                 counterArray[id]++;
